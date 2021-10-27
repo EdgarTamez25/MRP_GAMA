@@ -1,15 +1,13 @@
 <template>
-  <hello-world />
+  <v-btn :to="{name: 'Master'}"> IR A MASTER</v-btn>
 </template>
 
 <script>
-  import HelloWorld from '../components/HelloWorld'
 
   export default {
     name: 'Home',
 
     components: {
-      HelloWorld,
     },
   }
 </script>
