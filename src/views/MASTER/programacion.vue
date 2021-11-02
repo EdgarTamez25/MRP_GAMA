@@ -298,13 +298,15 @@
       },
 
       abrir_detalle_partida(item){
-        this.editedIndex = this.Programacion.indexOf(item)
-        this.editDetalle = Object.assign({}, item)
-        this.detalleModal = true
+        this.editedIndex = this.Programacion.indexOf(item); // !OBTENGO EL INDICE DEL REGISTRO ( POSICION )
+        this.editDetalle = Object.assign({}, item);         // ! ASIGNO EL VALOR DEL REGISTRO A LA EDICION DE DETALLE
+        this.detalleModal = true;                           // ! ACTIVO MODAL PARA EDITAR
       },
 
       validar_tipo_de_registro(){ 
         for(let i=0; i< this.Programacion.length; i++){
+          // ! VERIFICO QUE LA SUCURSAL SELECCIONADA NO SE IGUAL QUE LAS YA REGISTRADAS +
+          // ! VERIFICO QUE EL ELEMENTO NO SEA EL MISMO
           if(this.editDetalle.sucursal.id === this.Programacion[i].sucursal.id &&
              this.editedIndex != i){
             this.alerta = { 
@@ -316,30 +318,34 @@
             return
           } 
         }
+        // !SI NO HAY ERROR MANDO A GUARDAR LA INFORMACIÓN
         this.guardar_detalle_partida_local()
       },
 
       guardar_detalle_partida_local() {
+        // ! SI EL INDEX ES -1 ES IGUAL A NUEVO REGISITRO SI NO ES EDICION
         if (this.editedIndex > -1) {
+          // !ASIGNO EL NUEVO VALOR AL REGISTRO
           Object.assign(this.Programacion[this.editedIndex], this.editDetalle)
         } else {
+          // !INSERTO UN NUEVO ELEMENTO AL ARRAY
           this.Programacion.push(this.editDetalle)
         }
         this.cerrar_detalle()
       },
 
       cerrar_detalle() {
-        this.detalleModal = false
-        this.$nextTick(() => {
+        this.detalleModal = false; //! CIERRO MODAL DE ELIMINACION DE REGISTRO
+        this.$nextTick(() => {     //! FUNCION ESPECIFICA PARA RETORNAR A LOS VALORES DEFAULTS
           this.editDetalle = Object.assign({}, this.defaultDetalle)
           this.editedIndex = -1
         })
       },
 
       abrir_eliminar_partida(item) {
-        this.editedIndex = this.Programacion.indexOf(item)
-        this.editDetalle = Object.assign({}, item)
-        this.dialogDelete = true
+        this.editedIndex = this.Programacion.indexOf(item); // !OBTENGO EL INDICE DEL REGISTRO ( POSICION )
+        this.editDetalle = Object.assign({}, item);         // ! ASIGNO EL VALOR DEL REGISTRO A LA EDICION DE DETALLE
+        this.dialogDelete = true;                           // ! ACTIVO MODAL PARA ELIMINAR
       },
 
       eliminar_partida_local() {
@@ -348,14 +354,15 @@
       },
 
       cerrar_eliminar_partida() {
-        this.dialogDelete = false
-        this.$nextTick(() => {
+        this.dialogDelete = false //! CIERRO MODAL DE ELIMINACION DE REGISTRO
+        this.$nextTick(() => {    //! FUNCION ESPECIFICA PARA RETORNAR A LOS VALORES DEFAULTS
           this.editDetalle = Object.assign({}, this.defaultDetalle)
           this.editedIndex = -1
         })
       },
 
       validar_detalle_partida(){
+        // !UTILIZO PARSE PARA ASEGURAR QUE COMPARARE NUMEROS 
         if(parseInt(this.programacion.cantidad) > parseInt(this.TOTAL)){
           this.alerta = { 
             activo: true,
@@ -365,13 +372,15 @@
           };
           return ;
         }
+        // ! ABRO MODAL DE ALERTA PARA PROGRAMACION
          this.alerta_generar_programacion = true;
       },
 
       generar_nueva_programacion(){
-        this.overlay = true; 
-        this.alerta_generar_programacion = false;
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+        this.alerta_generar_programacion = false; // CIERRO MODAL DE CONFIRMACION
 
+        // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {
           id_det_ot      : this.programacion.id,
           id_producto    : this.programacion.id_producto,
@@ -384,13 +393,19 @@
           cant_prog      : this.TOTAL,
           programacion   : this.Programacion
         }
-
+        // ! FUNCION QUE MANDA A CREAR LA PROGRAMACION
         this.$http.post('agregarproduccion', payload).then( response =>{
+          //! GENERO ALERTA DE RESPUESTA.
           this.alerta = { 
             activo: true,
             texto : response.bodyText,
             color : 'success'
           };
+          //!DECLARO VARIABLE PARA FUNCION INTERNA DE THIS
+          let that = this; 
+          //! GENERO UN SET TIMER PARA PODER MOSTRAR LA RESPUESTA
+          setTimeout(() => {  that.$emit('modal',false) }, 2000); 
+
         }).catch(error =>{
           this.alerta = { 
             activo: true,
