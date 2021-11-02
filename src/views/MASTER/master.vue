@@ -9,7 +9,8 @@
             <v-btn color="white" text @click="alerta.activo = false" v-bind="attrs"> Cerrar </v-btn>
           </template>
         </v-snackbar>
-
+        
+        <!-- CONTENEDOR PRINCIPAL -->
         <v-card outlined class="pa-3">
           <v-row class="pa-1 py-0">
 						<v-col cols="12"  md="6" >
@@ -62,6 +63,7 @@
 							</v-dialog>
 						</v-col>
 					</v-row>
+          <!-- BOTONES DE ACCION *BUSCAR + RECARGAR-->
           <v-card-actions class="">
             <v-text-field
               v-model="search"
@@ -74,6 +76,7 @@
             <v-btn  dark color="green" @click="ImprimirExcel()"> <v-icon >mdi-microsoft-excel </v-icon> </v-btn> -->
             <v-btn  class="gris" icon dark @click="init()" ><v-icon>refresh</v-icon> </v-btn>
           </v-card-actions>
+          <!-- TABLA DE DATOS -->
           <v-data-table
             :headers="headers"
             :items="Master"
@@ -86,7 +89,7 @@
             :items-per-page="itemsPerPage"
             @page-count="pageCount = $event"
             locale="es-es"
-          >
+           >
             <template v-slot:item.oc="{ item }">
               <span v-if="item.oc" class="morado--text"> {{ item.oc }} </span>
               <span v-else class="morado--text"> S/O.C. </span>
@@ -168,19 +171,41 @@
                 </v-edit-dialog>
               </template>
 
+            
             <template v-slot:item.fecha_entrega="{ item }">
               <span v-if="item.urgencia === 1"  class="black--text"> {{ moment(item.fecha_entrega).format('LL') }} </span>
               <span v-if="item.urgencia === 2" class="orange--text"> {{ moment(item.fecha_entrega).format('LL') }} </span>
               <span v-if="item.urgencia === 3" class="error--text">  {{ moment(item.fecha_entrega).format('LL') }} </span>
             </template>
+
+            <template v-slot:item.action="{ item }">
+              <v-btn 
+                color="morado" 
+                dark fab small 
+                @click="programacionModal=true; programacion=item;"
+              >
+                <v-icon> mdi-desktop-mac-dashboard</v-icon> 
+              </v-btn>
+            </template>
           </v-data-table>
         </v-card>
-
         	<!-- PAGINACION -->
 				<div class="text-center pt-2">
 					<v-pagination v-model="page" :length="pageCount"></v-pagination>
 				</div>
       </v-col>
+
+      <!-- MODAL PROGRAMACION -->
+      <v-dialog v-model="programacionModal" width="700px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <PROGRAMACION
+            :programacion="programacion"
+            @modal="programacionModal = $event"
+          />
+        </v-card>
+      </v-dialog>
+
+
 
       <v-dialog v-model="ModalSucursal" persistent width="500px">
         <v-card class="pa-4">
@@ -224,10 +249,13 @@
 	// import  metodos from '@/mixins/metodos.js';
   import {mapGetters, mapActions} from 'vuex';
   // import overlay     from '@/components/overlay.vue';
+  import PROGRAMACION from '@/views/MASTER/programacion.vue'
+
   export default {
 		// mixins:[metodos],
     components: {
       // overlay,
+      PROGRAMACION
 		},
     data:() =>({
       page: 1,
@@ -268,8 +296,6 @@
         text: '',
         color: 'error',
       },
-
-
       headers: [
           { text: 'OC'         , align: 'start' , value: 'oc'       },
           { text: 'OT'         , align: 'left'  , value: 'id_ot'    },
@@ -281,8 +307,11 @@
           { text: 'Solicitante', align: 'left'  , value: 'solicitante'},
           { text: 'Urgencia'   , align: 'left'  , value: 'urgencia'  },
           { text: 'Fecha de entrega'      , align: 'left'  , value: 'fecha_entrega'     },
-					// { text: '' 		       , align: 'right' , value: 'action' , sortable: false },
-        ],
+					{ text: '' 		      , align: 'right' , value: 'action' , sortable: false },
+      ],
+      programacionModal: false,
+      programacion: {},
+      
     }),
 
     created(){

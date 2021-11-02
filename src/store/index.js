@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Login   from '@/modules/AppController/Login'
 
 import Master from '@/modules/master';
 
@@ -16,6 +17,7 @@ export default new Vuex.Store({
     }
   },
   modules: {
+    Login,
     Master
   }
 })
