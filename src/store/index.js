@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 import Login   from '@/modules/AppController/Login'
 
 import Master from '@/modules/master';
+import OT from '@/modules/OT';
+
 
 Vue.use(Vuex)
 
@@ -18,6 +20,7 @@ export default new Vuex.Store({
   },
   modules: {
     Login,
-    Master
+    Master,
+    OT
   }
 })

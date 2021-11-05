@@ -145,18 +145,18 @@
           <v-col cols="12" class="py-0 mt-3">
               <v-select
               v-model="editDetalle.sucursal" :items="sucursales" item-text="nombre" item-value="id" color="celeste" 
-              outlined  hide-details  placeholder="Sucursales" return-object dense
+              filled  hide-details  placeholder="Sucursales" return-object dense label="Sucursal"
             ></v-select>
           </v-col>
           <v-col cols="12" class="py-0 mt-3">
               <v-select
               v-model="editDetalle.depto" :items="departamentos" item-text="nombre" item-value="id" color="celeste" 
-              outlined  hide-details  placeholder="Departamentos" return-object dense
+              filled  hide-details  placeholder="Departamentos" return-object dense label="Departamento inicial"
             ></v-select>
           </v-col>
           <v-col cols="12" >
             <v-text-field
-              v-model ="editDetalle.cantidad " label="Cantidad"  outlined type="number" hide-details class="my-1" dense
+              v-model ="editDetalle.cantidad " label="Cantidad" type="filled" filled hide-details class="my-1" dense
             ></v-text-field>
             <span class="font-weight-black mx-3" v-if="editDetalle.cantidad"> 
               {{ editDetalle.cantidad | currency(0) }}  
@@ -274,9 +274,9 @@
       ...mapGetters('Login' ,['getLogeado','getdatosUsuario']), 
 
       GUARDAR_DATOS(){
-        if(this.editDetalle.sucursal.id != null && 
-           this.editDetalle.cantidad > 0 ) {      
-          // && this.editDetalle.depto.id != null){
+        if( this.editDetalle.sucursal.id != null && 
+            this.editDetalle.cantidad > 0        && 
+            this.editDetalle.depto.id != null){
           return false
         }else{
           return true
@@ -292,9 +292,15 @@
       }
     },
 
+     watch:{
+      async 'editDetalle.sucursal'(){
+        this.departamentos = await this.consultar_deptos_por_suc(this.editDetalle.sucursal.id);
+      }
+    },
+
     methods:{
       async init(){ 
-        this.sucursales = await this.consultar_sucursales(); 
+        this.sucursales    = await this.consultar_sucursales(); 
       },
 
       abrir_detalle_partida(item){
@@ -392,19 +398,16 @@
           tipo_prog      : this.Programacion.length > 0? 2:1, 
           cant_prog      : this.TOTAL,
           programacion   : this.Programacion
-        }
+        };
         // ! FUNCION QUE MANDA A CREAR LA PROGRAMACION
-        this.$http.post('agregarproduccion', payload).then( response =>{
+        this.$http.post('agregar.programacion.mrp', payload).then( response =>{
           //! GENERO ALERTA DE RESPUESTA.
           this.alerta = { 
             activo: true,
             texto : response.bodyText,
             color : 'success'
           };
-          //!DECLARO VARIABLE PARA FUNCION INTERNA DE THIS
-          let that = this; 
-          //! GENERO UN SET TIMER PARA PODER MOSTRAR LA RESPUESTA
-          setTimeout(() => {  that.$emit('modal',false) }, 2000); 
+          this.cerrar_vista();
 
         }).catch(error =>{
           this.alerta = { 
@@ -417,6 +420,15 @@
         });
 
       },
+
+      cerrar_vista(){
+        this.cerrar_detalle();
+        this.Programacion = [];
+        //!DECLARO VARIABLE PARA FUNCION INTERNA DE THIS
+        let that = this; 
+        //! GENERO UN SET TIMER PARA PODER MOSTRAR LA RESPUESTA
+        setTimeout(() => {  that.$emit('modal',false) }, 2000); 
+      }
 
     }
   }

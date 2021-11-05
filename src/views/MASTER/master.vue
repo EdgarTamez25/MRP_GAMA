@@ -105,9 +105,9 @@
               <span v-if="item.urgencia === 3" class="error--text"> {{ item.codigo}} </span>
             </template>
             <template v-slot:item.cantidad="{ item }">
-              <span v-if="item.urgencia === 1" class="black--text"> {{ item.cantidad }}  </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.cantidad}} </span>
-              <span v-if="item.urgencia === 3" class="error--text"> {{ item.cantidad}} </span>
+              <span v-if="item.urgencia === 1" class="black--text">  {{ item.cantidad | currency(0) }}  </span>
+              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.cantidad | currency(0) }} </span>
+              <span v-if="item.urgencia === 3" class="error--text">  {{ item.cantidad | currency(0) }} </span>
             </template>
             <template v-slot:item.unidad="{ item }">
               <span v-if="item.urgencia === 1" class="black--text"> {{ item.unidad }}  </span>
@@ -244,12 +244,16 @@
 </template>
 
 <script>
-  var moment = require('moment'); 
-  // moment.locale('es') /// inciar Moment 
 	// import  metodos from '@/mixins/metodos.js';
-  import {mapGetters, mapActions} from 'vuex';
   // import overlay     from '@/components/overlay.vue';
+
+  import Vue from 'vue'
+  var moment = require('moment'); 
+  import {mapGetters, mapActions} from 'vuex';
   import PROGRAMACION from '@/views/MASTER/programacion.vue'
+  
+  var accounting = require("accounting");
+  Vue.filter('currency', (val, dec) => { return accounting.formatMoney(val, '', dec) });
 
   export default {
 		// mixins:[metodos],
