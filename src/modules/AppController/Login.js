@@ -62,6 +62,7 @@ export default{
 		ObtenerDatosUsuario({commit},payload){
 			return new Promise((resolve, reject) => {
 				Vue.http.post('obtener.datos.usuario',payload ).then(response =>{
+					console.log('USUARIO',response.body)
 					resolve(response.body.datosUsuario)
 					commit('DATOS_USUARIO', response.body.datosUsuario );
 					commit('SISTEMAS'     , response.body.sistemas);
