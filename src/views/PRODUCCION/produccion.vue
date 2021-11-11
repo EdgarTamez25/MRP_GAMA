@@ -13,25 +13,26 @@
         <!-- CONTENEDOR PRINCIPAL -->
         <v-card outlined class="pa-3">
           <v-row class="pa-1 py-0">
-						<v-col cols="12" >
-							<v-card-actions class="font-weight-black headline  py-0 mt-1 " > PRODUCCIÓN </v-card-actions>
+
+						<v-col cols="12" sm="6" >
+							<v-card-actions class="font-weight-black headline   " > PRODUCCIÓN </v-card-actions>
 						</v-col>
 
-						<v-col cols="12" sm="4" md="2" offset-sm="4" class="py-0">
+						<v-col cols="12" sm="4" md="2"  >
 							<v-select
                 v-model="estatus" :items="Estatus" item-text="nombre" item-value="id"  dense
                  hide-details  placeholder="Estatus " return-object outlined append-icon="mdi-circle-slice-5"
               ></v-select> 
 						</v-col>
 
-						<v-col cols="12" sm="4" md="2" class="py-0">
+						<!--<v-col cols="12" sm="4" md="2" class="py-0">
 							<v-select
 									v-model="depto" :items="deptos" item-text="nombre" item-value="id" outlined color="celeste"  
 									dense hide-details  label="Departamentos" return-object placeholder ="Departamentos"  
 							></v-select>
-						</v-col> 
+						</v-col>  -->
 
-						<v-col cols="6" sm="4" md="2" class="py-0"> <!-- FECHA DE COMPROMISO -->
+						<v-col cols="6" sm="4" md="2" > <!-- FECHA DE COMPROMISO -->
 							<v-dialog ref="fecha1" v-model="fechamodal1" :return-value.sync="fecha1" persistent width="290px">
 								<template v-slot:activator="{ on }">
 									<v-text-field
@@ -47,7 +48,7 @@
 							</v-dialog>
 						</v-col>
 
-						<v-col cols="6" sm="4" md="2"  class="py-0"> <!-- FECHA DE COMPROMISO -->
+						<v-col cols="6" sm="4" md="2"  > <!-- FECHA DE COMPROMISO -->
 							<v-dialog ref="fecha2" v-model="fechamodal2" :return-value.sync="fecha2" persistent width="290px">
 								<template v-slot:activator="{ on }">
 									<v-text-field
@@ -70,6 +71,7 @@
               append-icon="search"
               label="Buscar"
               hide-details
+              filled dense
             ></v-text-field>
             <v-spacer></v-spacer>
            <!--  <v-btn  dark color="rosa" @click="validaInformacion()" v-if="estatus.id === 1"> PROCESAR INFORMACIÓN </v-btn>
@@ -79,7 +81,7 @@
           <!-- TABLA DE DATOS -->
           <v-data-table
             :headers="headers"
-            :items="Master"
+            :items="Produccion"
             class="font-weight-black"
             fixed-header
             hide-default-footer
@@ -300,16 +302,17 @@
         color: 'error',
       },
       headers: [
-          { text: 'OC'         , align: 'start' , value: 'oc'       },
-          { text: 'OT'         , align: 'left'  , value: 'id_ot'    },
-          { text: 'Producto'   , align: 'start' , value: 'codigo'   },
-          { text: 'Cantidad'   , align: 'left'  , value: 'cantidad' },
-          { text: 'Unidad'     , align: 'left'  , value: 'unidad'   },
-          { text: 'Cliente'    , align: 'left'  , value: 'nomcli'   },
-          { text: 'Concepto'   , align: 'left'  , value: 'concepto' },
-          { text: 'Solicitante', align: 'left'  , value: 'solicitante'},
-          { text: 'Urgencia'   , align: 'left'  , value: 'urgencia'  },
-          { text: 'Fecha de entrega'      , align: 'left'  , value: 'fecha_entrega'     },
+          { text: 'OT'              , align:'left'  , value: 'id_ot'    },
+          { text: 'Producto'        , align:'start' , value: 'codigo'   },
+          { text: 'Cant Solicitada' , align:'left'  , value: 'cant_sol' },
+          { text: 'Cant Recibida'   , align:'left'  , value: 'recibidas'   },
+          { text: 'Cant Terminada'  , align:'left'  , value: 'terminadas'   },
+          { text: 'Fecha de entrega', align:'left'  , value: 'fecha_entrega'},
+          { text: 'Urgencia'        , align:'left'  , value: 'urgencia'  },
+          { text: 'Cliente'         , align:'left'  , value: 'nomcli'    },
+          { text: 'Unidad'          , align:'left'  , value: 'nomunidad'},
+          { text: 'Creación'        , align:'left'  , value: 'creacion'},
+          { text: 'Finalización'    , align:'left'  , value: ''},
 					{ text: '' 		      , align: 'right' , value: 'action' , sortable: false },
       ],
       programacionModal: false,
@@ -338,8 +341,8 @@
 		},
 
     computed:{
-			...mapGetters('Master' ,['Loading','Parametros','Master']), // IMPORTANDO USO DE VUEX - (GETTERS)
-      ...mapGetters('Login' ,['getdatosUsuario','getSistemas']), 
+			...mapGetters('Produccion' ,['Loading','Parametros','Produccion']), // IMPORTANDO USO DE VUEX - (GETTERS)
+      ...mapGetters('Login' ,['getdatosUsuario']), 
 
 			tamanioPantalla () {
 				switch (this.$vuetify.breakpoint.name) {
@@ -363,16 +366,16 @@
 		},
 
     methods:{ 
-      ...mapActions('Master' ,['obtenerDatosMonitor','programaProductos']), 
+      ...mapActions('Produccion' ,['obtener_datos_produccion']), 
 
-      init(){
+      async init(){
         const payload = {
-          depto  
+          depto  : this.getdatosUsuario.id_depto,
           estatus: this.estatus.id,
 					fecha1 : this.fecha1,
 					fecha2 : this.fecha2
         }
-        this.obtenerDatosMonitor(payload);
+        await this.obtener_datos_produccion(payload);
       },
 
       validaInformacion(){
