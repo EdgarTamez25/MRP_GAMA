@@ -272,6 +272,8 @@
   
     computed:{
       ...mapGetters('Login' ,['getLogeado','getdatosUsuario']), 
+			...mapGetters('Master' ,['Parametros']), // IMPORTANDO USO DE VUEX - (GETTERS)
+
 
       GUARDAR_DATOS(){
         if( this.editDetalle.sucursal.id != null && 
@@ -299,6 +301,8 @@
     },
 
     methods:{
+      ...mapActions('Master' ,['obtenerDatosMonitor']), 
+
       async init(){ 
         this.sucursales    = await this.consultar_sucursales(); 
       },
@@ -423,6 +427,7 @@
 
       cerrar_vista(){
         this.cerrar_detalle();
+        this.obtenerDatosMonitor(this.Parametros);
         this.Programacion = [];
         //!DECLARO VARIABLE PARA FUNCION INTERNA DE THIS
         let that = this; 

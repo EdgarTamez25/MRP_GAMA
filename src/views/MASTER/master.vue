@@ -63,6 +63,7 @@
 							</v-dialog>
 						</v-col>
 					</v-row>
+
           <!-- BOTONES DE ACCION *BUSCAR + RECARGAR-->
           <v-card-actions class="">
             <v-text-field
@@ -206,7 +207,6 @@
       </v-dialog>
 
 
-
       <v-dialog v-model="ModalSucursal" persistent width="500px">
         <v-card class="pa-4">
           <v-card-text class="font-weight-black subtitle-1">
@@ -321,12 +321,6 @@
     created(){
       // this.consultaDepartamentos();
 			// this.consultarSucursales(); //MANDO A CONSULTAR SUCURSALES A MIXINS
-
-      if(this.Parametros != undefined){
-				this.estatus  = { id: this.Parametros.estatus };
-				this.fecha1   = this.Parametros.fecha1;
-				this.fecha2   = this.Parametros.fecha2;
-			}
       // console.log('datos', this.getdatosUsuario)
 
       this.init();

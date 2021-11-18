@@ -62,6 +62,19 @@ export default {
 			})	
 		},
 
+		consuta_tipos_envios(){  // TIPO DE ENVIOS
+			return new Promise( resolve => {
+				let tipos_envios = [
+					{ id:1, nombre:'COMPLETO'},
+					{ id:2, nombre:'PARCIAL' }
+				];
+
+				resolve(tipos_envios);
+				
+			})	
+		},
+		
+
 
 		
 

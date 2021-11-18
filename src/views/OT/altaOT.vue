@@ -397,12 +397,13 @@
           fecha_procesado: this.traerFechaActual() + ' ' + this.traerHoraActual(),
           sistema        : 'MRP'
         }
+        console.log('payload', payload);
 
         this.$http.post('crear.orden.trabajo', payload).then( response =>{
-            this.alerta = { activo: true, text: response.bodyText, color:'green'};
+            this.alerta = { activo: true, texto: response.bodyText, color:'green'};
             this.TerminarProceso();
         }).catch(error =>{
-            this.alerta = { activo: true, text: error.bodyText, color:'error'};
+            this.alerta = { activo: true, texto: error.bodyText, color:'error'};
         }).finally(()=>{
           this.overlay = false
         })

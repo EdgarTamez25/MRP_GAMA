@@ -4,7 +4,7 @@
       <v-col cols="12">
 
         <v-snackbar v-model="alerta.activo" multi-line vertical top right :color="alerta.color" > 
-          <strong> {{alerta.text}} </strong>
+          <strong> {{alerta.texto}} </strong>
           <template v-slot:action="{ attrs }">
             <v-btn color="white" text @click="alerta.activo = false" v-bind="attrs"> Cerrar </v-btn>
           </template>
@@ -25,12 +25,12 @@
               ></v-select> 
 						</v-col>
 
-						<!--<v-col cols="12" sm="4" md="2" class="py-0">
+						<v-col cols="12" sm="4" md="2" >
 							<v-select
-									v-model="depto" :items="deptos" item-text="nombre" item-value="id" outlined color="celeste"  
+									v-model="depto" :items="departamentos" item-text="nombre" item-value="id" outlined color="celeste"  
 									dense hide-details  label="Departamentos" return-object placeholder ="Departamentos"  
 							></v-select>
-						</v-col>  -->
+						</v-col>  
 
 						<v-col cols="6" sm="4" md="2" > <!-- FECHA DE COMPROMISO -->
 							<v-dialog ref="fecha1" v-model="fechamodal1" :return-value.sync="fecha1" persistent width="290px">
@@ -77,6 +77,7 @@
            <!--  <v-btn  dark color="rosa" @click="validaInformacion()" v-if="estatus.id === 1"> PROCESAR INFORMACIÓN </v-btn>
             <v-btn  dark color="green" @click="ImprimirExcel()"> <v-icon >mdi-microsoft-excel </v-icon> </v-btn> -->
             <v-btn  class="gris" icon dark @click="init()" ><v-icon>refresh</v-icon> </v-btn>
+            
           </v-card-actions>
           <!-- TABLA DE DATOS -->
           <v-data-table
@@ -92,103 +93,93 @@
             @page-count="pageCount = $event"
             locale="es-es"
            >
-            <template v-slot:item.oc="{ item }">
-              <span v-if="item.oc" class="morado--text"> {{ item.oc }} </span>
-              <span v-else class="morado--text"> S/O.C. </span>
-            </template>
-            <template v-slot:item.id_ot="{ item }">
-              <span v-if="item.urgencia === 1"  class="black--text"> {{ item.id_ot }} </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.id_ot}} </span>
-              <span v-if="item.urgencia === 3" class="error--text"> {{ item.id_ot}} </span>
-            </template>
-            <template v-slot:item.codigo="{ item }">
-              <span v-if="item.urgencia === 1"  class="black--text"> {{ item.codigo }} </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.codigo}} </span>
-              <span v-if="item.urgencia === 3" class="error--text"> {{ item.codigo}} </span>
-            </template>
-            <template v-slot:item.cantidad="{ item }">
-              <span v-if="item.urgencia === 1" class="black--text">  {{ item.cantidad | currency(0) }}  </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.cantidad | currency(0) }} </span>
-              <span v-if="item.urgencia === 3" class="error--text">  {{ item.cantidad | currency(0) }} </span>
-            </template>
-            <template v-slot:item.unidad="{ item }">
-              <span v-if="item.urgencia === 1" class="black--text"> {{ item.unidad }}  </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.unidad}} </span>
-              <span v-if="item.urgencia === 3" class="error--text"> {{ item.unidad}} </span>
-            </template>
-            <template v-slot:item.nomcli="{ item }">
-              <span v-if="item.urgencia === 1"  class="black--text"> {{ item.nomcli }} </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.nomcli}} </span>
-              <span v-if="item.urgencia === 3" class="error--text"> {{ item.nomcli}} </span>
-            </template>
-            <template v-slot:item.concepto="{ item }">
-              <span v-if="item.urgencia === 1"  class="black--text"> {{ item.concepto === 1 ? 'PRODUCCIÓN':'STOCK'}} </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.concepto === 1 ? 'PRODUCCIÓN':'STOCK'}} </span>
-              <span v-if="item.urgencia === 3" class="error--text">  {{ item.concepto === 1 ? 'PRODUCCIÓN':'STOCK'}} </span>
-            </template>
-            <template v-slot:item.solicitante="{ item }">
-              <span v-if="item.urgencia === 1"  class="black--text"> {{ item.solicitante }} </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ item.solicitante}} </span>
-              <span v-if="item.urgencia === 3" class="error--text"> {{ item.solicitante}} </span>
-            </template>
-            <template v-slot:item.urgencia="{ item }" v-if="estatus.id != 1">
-              <v-btn text v-if="item.urgencia === 1" class="black--text" align="lef"> NORMAL </v-btn>
-              <v-btn text v-if="item.urgencia === 2" color="orange"> URGENTE </v-btn>
-              <v-btn text v-if="item.urgencia === 3" color="error"> PRIORIDAD </v-btn>
-            </template>
-            <template v-slot:item.urgencia="props" v-else >
-                <v-edit-dialog 
-                  :return-value.sync="props.item.urgencia"
-                   @save="guardarUrgencia(props.item)"
-                   large 
-                   save-text="Guardar"
-                   cancel-text="Cancelar"
-                >
-                  <v-btn text v-if="props.item.urgencia === 1" class="black--text"> NORMAL </v-btn>
-                  <v-btn text v-if="props.item.urgencia === 2" color="orange"> URGENTE </v-btn>
-                  <v-btn text v-if="props.item.urgencia === 3" color="error"> PRIORIDAD </v-btn>
+          
 
-                  <template v-slot:input >
-                    <v-card-text class="pa-0 mt-5" >
-                      <v-select
-                        :items="urgencias"
-                        item-text="nombre"
-                        item-value="id"
-                        label="Urgencia"
-                        hide-details
-                        v-model="props.item.urgencia"
-                      ></v-select>
+            <template v-slot:item.cant_sol="{ item }">
+              <span>  {{ item.cant_sol | currency(0) }}  </span>
+            </template>
+            <template v-slot:item.recibidas="{ item }">
+              <span>  {{ item.recibidas | currency(0) }}  </span>
+            </template>
+            <template v-slot:item.terminadas="{ item }">
+              <span>  {{ item.terminadas | currency(0) }}  </span>
+            </template>
 
-                      <v-textarea
-                        filled
-                        v-model="props.item.razon"
-                        label="Razon de urgencia"
-                        rows="2"
-                        v-if="props.item.razon"
-                        disabled
-                      ></v-textarea>
-                    </v-card-text >
-                    
-                  </template>
-                </v-edit-dialog>
-              </template>
+            <template v-slot:item.codigo="{ item }" >
+              <v-btn text class="font-weight-black">  {{ item.codigo  }}  </v-btn>
+            </template>
 
             
-            <template v-slot:item.fecha_entrega="{ item }">
-              <span v-if="item.urgencia === 1"  class="black--text"> {{ moment(item.fecha_entrega).format('LL') }} </span>
-              <span v-if="item.urgencia === 2" class="orange--text"> {{ moment(item.fecha_entrega).format('LL') }} </span>
-              <span v-if="item.urgencia === 3" class="error--text">  {{ moment(item.fecha_entrega).format('LL') }} </span>
+            <template v-slot:item.urgencia="{ item }" >
+              <span v-if="item.urgencia === 1"> <v-btn fab style="width: 30px; height: 30px" color="white"></v-btn>  </span>
+              <span v-if="item.urgencia === 2"> <v-btn fab style="width: 30px; height: 30px" color="orange"></v-btn> </span>
+              <span v-if="item.urgencia === 3"> <v-btn fab style="width: 30px; height: 30px" color="error"></v-btn> </span>
+            </template>
+
+            <template v-slot:item.fecha_entrega="{ item }" >
+              <span :class="item.dias >= 3? 'success--text':'error--text'">
+                {{ moment(item.fecha_entrega).format('LL') }} 
+              </span>
+
+            </template>
+
+            <template v-slot:item.creacion="{ item }">
+              <span  > {{ moment(item.creacion).format('LL')  }} </span>
+            </template>
+
+            <template v-slot:item.dias="{ item }">
+             <!-- <span :class="[`${color}--text`, ]" v-if="item.dias === 0 "> -->
+              <span :class="[`red--text`, ]" v-if="item.dias === 0 "> 
+                HOY SE ENTREGA 
+              </span>
+              <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias >= 1 "> 
+                {{ item.dias > 1 ?'FALTAN':'FALTA'}}  {{ item.dias }} {{ item.dias > 1 ?'DÍAS':'DÍA'}}  
+              </span>
+              <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias < 0 "> 
+                FUERA DE TIEMPO 
+              </span>
+            </template>
+
+            <template v-slot:item.deptoemisor="{ item }">
+              <span  > {{ item.deptoemisor ? item.deptoemisor : 'MASTER' }} </span>
             </template>
 
             <template v-slot:item.action="{ item }">
               <v-btn 
-                color="morado" 
-                dark fab small 
-                @click="programacionModal=true; programacion=item;"
+                v-if="estatus.id === 0"
+                @click="abrir_modal_accion(item)"
+                color="celeste" dark
               >
-                <v-icon> mdi-desktop-mac-dashboard</v-icon> 
+                <v-icon > mdi-package-variant </v-icon> 
+              </v-btn>
+
+              <v-btn 
+                v-if="estatus.id === 1"
+                @click="abrir_modal_accion(item)"
+                color="celeste" dark
+              >
+                <v-icon > mdi-play-outline </v-icon> 
+              </v-btn>
+
+              <v-btn 
+                v-if="estatus.id === 2"
+                @click="abrir_modal_accion(item)"
+                color="celeste" dark
+                class="ma-1"
+              >
+                <v-icon style="font-size:28px"> mdi-cube-send</v-icon> 
+              </v-btn>
+
+              <v-btn 
+                v-if="estatus.id === 2"
+                @click="modal_finalizar_partida = true;itemAFinalizar = item"
+                color="success" dark
+                class="ma-1"
+              >
+                <v-icon style="font-size:28px"> mdi-text-box-check-outline</v-icon> 
               </v-btn>
             </template>
+
           </v-data-table>
         </v-card>
         	<!-- PAGINACION -->
@@ -197,93 +188,130 @@
 				</div>
       </v-col>
 
-      <!-- MODAL PROGRAMACION -->
-      <v-dialog v-model="programacionModal" width="700px" persistent transition="dialog-bottom-transition">
+      <!-- MODAL RECIBO MATERIAL -->
+      <v-dialog v-model="modal_recibo_material" width="600px" persistent transition="dialog-bottom-transition">
         <v-card class="pa-3">
-          <PROGRAMACION
-            :programacion="programacion"
-            @modal="programacionModal = $event"
+          <RMATERIAL
+            :parametros="parametros"
+            @modal="modal_recibo_material = $event"
+          />
+        </v-card>
+      </v-dialog>
+      
+      <!-- MODAL INICAR PARTIDA -->
+      <v-dialog v-model="modal_inciar" width="600px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <INCIARP
+            :parametros="parametros"
+            @modal="modal_inciar = $event"
           />
         </v-card>
       </v-dialog>
 
+      <!-- MODAL ENVIO DE MATERIAL -->
+      <v-dialog v-model="modal_envio_producto" width="600px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <ENVIOP
+            :parametros="parametros"
+            @modal="modal_envio_producto = $event"
+          />
+        </v-card>
+      </v-dialog>
 
-
-      <v-dialog v-model="ModalSucursal" persistent width="500px">
-        <v-card class="pa-4">
-          <v-card-text class="font-weight-black subtitle-1">
-            SELECCIONE LA SUCURSAL EN LA CUAL SE PROGRAMARAN LOS PRODUCTOS
-          </v-card-text>
-          <v-card-text>
-            <v-select
-							:items="sucursales"
-							item-text="nombre"
-							item-value="id"
-							label="Sucursal"
-							placeholder="Sucursal"
-							append-icon="store"
-							hide-details
-							v-model="sucursal"
-							filled
-							return-object
-						></v-select>
-          </v-card-text>
-          <div class="mt-10"></div>
-          <v-footer absolute>
-            <v-btn color="error" outlined  @click="ModalSucursal = false">Cancelar </v-btn>
+      <!-- MODAL FINALIZAR PARTIDA -->
+      <v-dialog v-model="modal_finalizar_partida" width="600px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <v-card-subtitle align="center" class="subtitle-1 font-weight-black mt-3 black--text" style="word-break:normal;" > 
+            SE FINALIZARA LA PARTIDA NÚMERO {{ itemAFinalizar.id }} DE LA ORDEN DE TRABAJO {{ itemAFinalizar.id_ot }} 
+          </v-card-subtitle>
+          <v-card-subtitle align="center" class=" mt-1 subtitle-2 font-weight-black">¿ ESTA SEGURO DE QUERER CONTINUAR ?</v-card-subtitle>
+          <v-divider class="my-0 py-3" ></v-divider>
+          <v-card-subtitle align="center" class="red--text font-weight-bold "> NO SE PODRAN EFECTUAR CAMBIOS POSTERIORES </v-card-subtitle>
+          <v-divider class="my-0 py-2 " ></v-divider>
+          
+          <div class="mt-12"></div>
+          <v-footer absolute fixed>
+            <v-btn  
+              dark color="error" text
+              @click="" 
+            >
+              No, Cancelar
+            </v-btn> 
             <v-spacer></v-spacer>
-            <v-btn color="green" dark @click="PrepararDatos()"> Procesar Información</v-btn>
+            <v-btn  
+              dark color="success" 
+              @click="finalizar_partida()" 
+            >
+              Sí, finalizar
+            </v-btn> 
           </v-footer>
         </v-card>
-        
       </v-dialog>
-      <overlay v-if="overlay"/>
 
+        
+      <overlay v-if="overlay"/>
 
     </v-row>
   </v-main>
 </template>
 
 <script>
-	// import  metodos from '@/mixins/metodos.js';
-  // import overlay     from '@/components/overlay.vue';
-
-  import Vue from 'vue'
-  var moment = require('moment'); 
-  import {mapGetters, mapActions} from 'vuex';
-  import PROGRAMACION from '@/views/MASTER/programacion.vue'
+  import overlay     from '@/components/overlay.vue';
+  // VARIABLES GLOBALES ****************************************
+  var moment     = require('moment');     // MOMENT ( FECHAS )
+  var accounting = require("accounting"); // ( FORMATO PARA NUMEROS)
+  // FUNCIONES EXTERNAS ****************************************
+	import  metodos from '@/mixins/metodos.js';  // MIXINS
+  import {mapGetters, mapActions} from 'vuex'; // VUEX
+  // COMPONENTES *********************************************** 
+  import RMATERIAL from '@/views/PRODUCCION/recibo_material.vue'
+  import INCIARP from '@/views/PRODUCCION/iniciar_partida.vue'
+  import ENVIOP   from '@/views/PRODUCCION/envio_producto.vue'
   
-  var accounting = require("accounting");
-  Vue.filter('currency', (val, dec) => { return accounting.formatMoney(val, '', dec) });
-
+  
   export default {
-		// mixins:[metodos],
+		mixins:[metodos],
     components: {
-      // overlay,
-      PROGRAMACION
+      overlay,
+      RMATERIAL,
+      INCIARP,
+      ENVIOP
 		},
     data:() =>({
+      // TABLA PRINCIPAL
       page: 1,
       pageCount: 0,
       itemsPerPage: 20,
       search: '',
-      singleSelect: false,
-      selected: [],
-
-      depto : { 
-        id:1, nombre:'FLEXOGRAFÍA'
-      },
-      deptos: [],	
+      headers: [
+          { text: 'Urgencia'        , align:'left'  , value: 'urgencia'  },
+          { text: 'Partida'         , align:'left'  , value: 'id'  },
+          { text: 'OT'              , align:'left'    , value: 'id_ot'    },
+          { text: 'Cliente'         , align:'left'    , value: 'nomcli'    },
+          { text: 'Programado'      , align:'left'    , value: 'creacion'},
+          { text: 'Entrega'         , align:'left'    , value: 'fecha_entrega'},
+          { text: 'Faltantes'       , align:'left'    , value: 'dias'},
+          { text: 'Producto'        , align:'left'   , value: 'codigo'   },
+          { text: 'Solicitado'      , align:'right'   , value: 'cant_sol' },
+          { text: 'Recibido'        , align:'right'   , value: 'recibidas'   },
+          { text: 'Terminado'       , align:'right'   , value: 'terminadas'   },
+          { text: 'Emisor'          , align:'left'   , value: 'deptoemisor'   },
+          { text: 'Enviado a'       , align:'left'   , value: 'departamento'   },
+					{ text: '' 		            , align: 'right'  , value: 'action' , sortable: false },
+      ],
+      
+      // SELECTORES
       estatus: {  
         id: 1, nombre:'Pendiente'
       },
       Estatus:[ 
+        { id: 0, nombre:'Por recibir'},
         { id: 1, nombre:'Pendiente'},
-        { id: 2 ,nombre:'Programado'},
+        { id: 2 ,nombre:'Produciendo'},
+        { id: 4, nombre:'Enviado'},
         { id: 3, nombre:'Terminado'},
+
       ],
-      sucursal:{ id:null, nombre:''},
-      sucursales:[],	
       urgencias:[
         { id:1, nombre:'NORMAL'   },
         { id:2, nombre:'URGENTE'  },
@@ -294,49 +322,45 @@
       fecha2: moment().subtract('months').endOf('months').format("YYYY-MM-DD"),
       fechamodal2:false,
 
-      ModalSucursal: false,
+      depto: { id:1, nombre:'FLEXOGRAFIA'},
+      departamentos:[],
+      // MODALES 
+      parametros: {}, 
+      modal_recibo_material: false,
+      modal_inciar: false,
+      modal_envio_producto: false,
+      modal_finalizar_partida: false, 
+      itemAFinalizar: {},
+      
+      // ALERTAS
+      contador: 0 ,
+      color: '',
+      colores: ['black','error'], 
       overlay: false,
+
       alerta: { 
         activo: false,
-        text: '',
+        texto: '',
         color: 'error',
       },
-      headers: [
-          { text: 'OT'              , align:'left'  , value: 'id_ot'    },
-          { text: 'Producto'        , align:'start' , value: 'codigo'   },
-          { text: 'Cant Solicitada' , align:'left'  , value: 'cant_sol' },
-          { text: 'Cant Recibida'   , align:'left'  , value: 'recibidas'   },
-          { text: 'Cant Terminada'  , align:'left'  , value: 'terminadas'   },
-          { text: 'Fecha de entrega', align:'left'  , value: 'fecha_entrega'},
-          { text: 'Urgencia'        , align:'left'  , value: 'urgencia'  },
-          { text: 'Cliente'         , align:'left'  , value: 'nomcli'    },
-          { text: 'Unidad'          , align:'left'  , value: 'nomunidad'},
-          { text: 'Creación'        , align:'left'  , value: 'creacion'},
-          { text: 'Finalización'    , align:'left'  , value: ''},
-					{ text: '' 		      , align: 'right' , value: 'action' , sortable: false },
-      ],
-      programacionModal: false,
-      programacion: {},
-      
     }),
 
-    created(){
-      // this.consultaDepartamentos();
-			// this.consultarSucursales(); //MANDO A CONSULTAR SUCURSALES A MIXINS
+    filters:{
+      currency(val, dec){
+        return accounting.formatMoney(val, '', dec);
+      },
+    },
 
-      if(this.Parametros != undefined){
-				this.estatus  = { id: this.Parametros.estatus };
-				this.fecha1   = this.Parametros.fecha1;
-				this.fecha2   = this.Parametros.fecha2;
-			}
-      // console.log('datos', this.getdatosUsuario)
-
+    async created(){
+      this.colorBar();
+      this.departamentos = await this.consultar_deptos_por_suc(this.getdatosUsuario.id_sucursal);
       this.init();
     },
 
     watch:{
 			fecha1() { this.init(); },
 			fecha2() { this.init(); },
+      depto(){ this.init()},
 			estatus(){ this.init(); },
 		},
 
@@ -363,61 +387,91 @@
 					break;
 				}
 			},
+
 		},
 
     methods:{ 
-      ...mapActions('Produccion' ,['obtener_datos_produccion']), 
+      ...mapActions('Produccion' ,['obtener_datos_produccion','obtener_productos_enviados']), 
 
       async init(){
         const payload = {
-          depto  : this.getdatosUsuario.id_depto,
+          // id_depto  : this.getdatosUsuario.id_depto,
+          id_depto  : this.depto.id,
           estatus: this.estatus.id,
 					fecha1 : this.fecha1,
 					fecha2 : this.fecha2
         }
-        await this.obtener_datos_produccion(payload);
-      },
 
-      validaInformacion(){
-        // console.log('selected', this.selected);
-        if(!this.selected.length){
-          this.alerta = { activo: true, text:'DEBES SELECCIONAR LOS PRODUCTOS QUE SE PROGRAMARAN', color:'error'}; return ;
+        if(this.estatus.id === 4){
+          await this.obtener_productos_enviados(payload);
+        }else{
+          await this.obtener_datos_produccion(payload);
         }
-        this.ModalSucursal = true;
-        // this.programarProductos()
+
+      },
+      
+      abrir_modal_accion(item){
+        switch (this.estatus.id) {
+          case 0:
+            this.modal_recibo_material = true;
+            this.parametros = item;
+            break;
+          case 1:
+            this.modal_inciar = true;
+            this.parametros = item;
+            break;
+
+          case 2:
+            this.modal_envio_producto = true;
+            this.parametros = item;
+            break;
+         
+        }
       },
 
-      PrepararDatos(){
-        this.ModalSucursal = false; this.overlay = true
-        const payload = new Object({
-          creacion   : this.traerFechaActual() + ' ' + this.traerHoraActual(),   
-          id_creador : this.getdatosUsuario.id,
-          id_sucursal: this.sucursal.id,
-          detalle    : this.selected
-        })
+      finalizar_partida(){
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+        this.modal_finalizar_partida = false; // CIERRO MODAL DE CONFIRMACION
 
-        this.programarProductos(payload);
-      },
+        // !GENERO OBJETO QUE MANDARE A INSERTAR
+        const payload = {
+          id_movim : this.itemAFinalizar.id,
+          finalizacion: this.traerFechaActual() + ' ' + this.traerHoraActual(),
+        };
+        // ! FUNCION QUE MANDA A CREAR LA PROGRAMACION
+        this.$http.post('finalizar.partida.movim', payload).then( response =>{
+          // console.log('RESPUESTA', response)
+          this.init();
+          //! GENERO ALERTA DE RESPUESTA.
+          this.alerta = { 
+            activo: true,
+            texto : response.bodyText,
+            color : 'success'
+          };
 
-      programarProductos(data){
-
-        this.programaProductos(data).then(response =>{
-          this.alerta = { activo: true, text:response.bodyText, color:'green'};
-          this.init(); this.selected = [];
         }).catch(error =>{
-          this.alerta = { activo: true, text:error.bodyText, color:'error'};
-        }).finally(()=>{
-          this.overlay = false
-        })
+          this.alerta = { 
+            activo: true,
+            texto : error.bodyText,
+            color : 'error'
+          };
+        }).finally(()=>{ 
+          this.overlay = false;
+        });
+
       },
 
-      guardarUrgencia(item){
-        this.$http.put('actualiza.urgencia.det.ot/'+ item.id, item);
-      }
-    }
-
-
-
+      colorBar(){
+        this.color = this.colores[this.contador]  
+        this.contador++
+        if(this.contador <= 2){
+          setTimeout(this.colorBar,500);
+        }
+        if(this.contador == 2){
+          this.contador = 0
+        }
+      },
+    },
 
   }
 </script>

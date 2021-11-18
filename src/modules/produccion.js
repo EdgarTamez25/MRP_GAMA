@@ -5,7 +5,7 @@ export default{
 	namespaced: true,
 	state:{
     loading: true,
-		parametros:[],
+		parametros:{},
 		produccion:[]
 	},
 
@@ -33,6 +33,22 @@ export default{
 				}).finally(() => commit('LOADING', false)) 
 			})
 		},
+
+		obtener_productos_enviados({commit}, payload){
+			commit('LOADING',true); commit('PRODUCCION', []);
+			return new Promise( resolve => {
+				Vue.http.post('obtener.productos.enviados', payload).then(response=>{
+					console.log('PRODUCCION', response)
+					commit('PRODUCCION', response.body)
+					resolve(true);
+				}).catch((error)=>{
+					console.log('error',error)
+					resolve(false)
+				}).finally(() => commit('LOADING', false)) 
+			})
+		},
+
+		
   },
 
 	getters:{

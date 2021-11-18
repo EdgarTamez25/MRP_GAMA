@@ -15,7 +15,7 @@ export default{
 			state.loading = data; 
 		},
 		PARAMETROS(state, data){
-			state.filtros = data
+			state.parametros = data
 		},
 		MASTER(state,  data){
 			state.master = data
@@ -54,7 +54,7 @@ export default{
 			return state.loading
 		},
 		Parametros(state){
-			return state.filtros
+			return state.parametros
 		},
 
 		Master(state){
