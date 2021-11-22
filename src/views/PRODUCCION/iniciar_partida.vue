@@ -56,11 +56,12 @@
 
     <v-col>
        <v-card class="text-center " outlined>
-        <v-card-subtitle  class="text-h6 font-weight-black" align="center" style="word-break:normal;" > SE AUTORIZARA EL COMIENZO DE LA PARTIDA  </v-card-subtitle>
+        <v-card-subtitle   align="center"  > 
+          <span class="text-h5 font-weight-black" style="word-break:normal;"> SE AUTORIZARA EL COMIENZO DE LA PARTIDA   </span> <br>
+          <span class="subtitle-2 error--text font-weight-black"> RECUERDE QUE NO SE PODRAN EFECTUAR CAMBIOS POSTERIORMENTE  </span>
+        </v-card-subtitle>
         <v-divider></v-divider>
-        <v-card-subtitle class="subtitle-1 font-weight-black morado--text"> SI ESTA SEGURO DE QUERER CONTINUAR PRESIONE EL BOTON  INICIAR </v-card-subtitle>
-        <v-divider></v-divider>
-        <v-card-subtitle align="center" class=" subtitle-1 red--text font-weight-bold "> RECUERDE QUE NO SE PODRAN EFECTUAR CAMBIOS POSTERIORMENTE  </v-card-subtitle>
+        <v-card-subtitle class="subtitle-1 font-weight-black info--text"> SI ESTA SEGURO DE QUERER CONTINUAR PRESIONE EL BOTON  INICIAR </v-card-subtitle>
       </v-card>
     </v-col>
 

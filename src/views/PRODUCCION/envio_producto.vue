@@ -133,7 +133,7 @@
         <v-card-actions>
           <v-spacer/>
           <v-btn dark outlined color="gris" @click="alerta_envio_material = false">Regresar</v-btn>
-          <v-btn dark color="error" @click="enviar_material()"  >Continuar</v-btn>
+          <v-btn dark color="error" @click="evaluar_envio_de_producto()"  >Continuar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -172,7 +172,7 @@
 
         datos:{
           tipo_envio: {id: null, nombre:''},
-          deptos: {id: null, nombre:''},
+          deptos: {id: null, nombre:'', empaque: 0},
           cantidad_enviar: 0,
         },
 
@@ -219,7 +219,7 @@
     },
 
     methods:{
-      ...mapActions('Produccion' ,['obtener_datos_produccion']), 
+      ...mapActions('Produccion' ,['obtener_datos_produccion','agregar_producto_terminados']), 
 
       validar_datos_envio(){
         if(this.getdatosUsuario.id_depto === this.datos.deptos.id){
@@ -234,47 +234,62 @@
         this.alerta_envio_material = true;
       },
 
-      enviar_material(){
+      evaluar_envio_de_producto(){
         this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
         this.alerta_envio_material = false; // CIERRO MODAL DE CONFIRMACION
 
-        // !GENERO OBJETO QUE MANDARE A INSERTAR
-        const payload = {
-          id_movim       : this.parametros.id,   // id para actualizar el registro actual
-          id_nuevo_depto : this.datos.deptos.id, // id nuevo departamento
-          id_usr_emisor  : this.getdatosUsuario.id, // USUARIO QUE EMITE EL ENVI0
-          emisor         : this.getdatosUsuario.id_depto, // DEPARTAMENTO QUE EMITE EL ENVIO
-          enviadas       : this.datos.cantidad_enviar,  // CANTIDAD DE PRODUCTO A ENVIAR AL SIG DEPTO
-          tipo_prog      : this.datos.tipo_envio.id,
-          creacion       : this.traerFechaActual() + ' ' + this.traerHoraActual(),
-          id_produccion  : this.parametros.id_produccion,
-          id_sucursal    : this.parametros.id_sucursal,
-          id_producto    : this.parametros.id_producto,
-          cant_sol       : this.parametros.cant_sol,
-          estatus_prod   : 0, 
-          
-        };
-          
-        // console.log("payload", payload);
+        if(this.datos.deptos.pt === 1){
+          const payload = {
+            id_ot         : this.parametros.id_ot,
+            id_produccion : this.parametros.id_produccion,
+            id_sucursal   : this.parametros.id_sucursal,
+            id_producto   : this.parametros.id_producto,
+            cantidad      : this.datos.cantidad_enviar,
+            id_depto_envia: this.getdatosUsuario.id_depto,
+            id_creador    : this.getdatosUsuario.id,
+            id_movim      : this.parametros.id,   // ID PARA ACTUALIZAR EL REGISTRO
+          }
+
+          console.log('payload 2',payload);
+          this.agregar_producto_terminados(payload).then( response =>{
+            this.alerta = { activo: true, texto : response.bodyText, color : 'green' };
+            this.cerrar_vista();
+          }).catch( error =>{
+            this.alerta = { activo: true, texto : error.bodyText, color : 'error'  };
+          }).finally( () => {
+            this.overlay = false;
+          })
+        }
+
+        if(this.datos.deptos.pt === 0){
+          // !GENERO OBJETO QUE MANDARE A INSERTAR
+          const payload = {
+            id_movim       : this.parametros.id,            // ID PARA ACTUALIZAR EL REGISTRO
+            id_nuevo_depto : this.datos.deptos.id,          // ID NUEVO DEPARTAMENTO
+            id_usr_emisor  : this.getdatosUsuario.id,       // USUARIO QUE EMITE EL ENVI0
+            emisor         : this.getdatosUsuario.id_depto, // DEPARTAMENTO QUE EMITE EL ENVIO
+            enviadas       : this.datos.cantidad_enviar,    // CANTIDAD DE PRODUCTO A ENVIAR AL SIG DEPTO
+            tipo_prog      : this.datos.tipo_envio.id,
+            creacion       : this.traerFechaActual() + ' ' + this.traerHoraActual(),
+            id_produccion  : this.parametros.id_produccion,
+            id_sucursal    : this.parametros.id_sucursal,
+            id_producto    : this.parametros.id_producto,
+            cant_sol       : this.parametros.cant_sol,
+            estatus_prod   : 0, 
+          };
+
+          this.enviar_material(payload);
+        }
+      },
+
+      enviar_material(payload){
         // ! FUNCION QUE MANDA A CREAR LA PROGRAMACION
         this.$http.post('autorizar.envio.material', payload).then( response =>{
-          // console.log('response', response);
           //! GENERO ALERTA DE RESPUESTA.
-          this.alerta = { 
-            activo: true,
-            texto : response.bodyText,
-            color : 'green'
-          };
+          this.alerta = { activo: true, texto : response.bodyText, color : 'green' };
           this.cerrar_vista();
-
         }).catch(error =>{
-          // console.log('error', error);
-
-          this.alerta = { 
-            activo: true,
-            texto : error.bodyText,
-            color : 'error'
-          };
+          this.alerta = { activo: true, texto : error.bodyText, color : 'error'  };
         }).finally(()=>{ 
           this.overlay = false;
         });
@@ -294,8 +309,8 @@
 
       cerrar_vista(){
         this.cantidad_recibida = 0;
-        this.obtener_datos_produccion(this.Parametros)
         this.datos = this.detosDefault;
+        this.obtener_datos_produccion(this.Parametros)
         //!DECLARO VARIABLE PARA FUNCION INTERNA DE THIS
         let that = this; 
         //! GENERO UN SET TIMER PARA PODER MOSTRAR LA RESPUESTA

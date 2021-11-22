@@ -36,7 +36,7 @@ export default{
 
 		obtener_productos_enviados({commit}, payload){
 			commit('LOADING',true); commit('PRODUCCION', []);
-			return new Promise( resolve => {
+			return new Promise( resolve=> {
 				Vue.http.post('obtener.productos.enviados', payload).then(response=>{
 					console.log('PRODUCCION', response)
 					commit('PRODUCCION', response.body)
@@ -47,6 +47,19 @@ export default{
 				}).finally(() => commit('LOADING', false)) 
 			})
 		},
+		
+		agregar_producto_terminados({commit}, payload){
+			return new Promise( (resolve, reject) => {
+				Vue.http.post('agregar.producto.terminado', payload).then(response=>{
+					console.log('PT', response)
+					resolve(response);
+				}).catch((error)=>{
+					console.log('error',error)
+					reject(error)
+				}).finally(() => commit('LOADING', false)) 
+			})
+		},
+		
 
 		
   },

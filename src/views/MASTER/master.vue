@@ -71,16 +71,19 @@
               append-icon="search"
               label="Buscar"
               hide-details
+              filled dense
             ></v-text-field>
             <v-spacer></v-spacer>
            <!--  <v-btn  dark color="rosa" @click="validaInformacion()" v-if="estatus.id === 1"> PROCESAR INFORMACIÓN </v-btn>
             <v-btn  dark color="green" @click="ImprimirExcel()"> <v-icon >mdi-microsoft-excel </v-icon> </v-btn> -->
             <v-btn  class="gris" icon dark @click="init()" ><v-icon>refresh</v-icon> </v-btn>
           </v-card-actions>
+          
           <!-- TABLA DE DATOS -->
           <v-data-table
             :headers="headers"
             :items="Master"
+            :search="search"
             class="font-weight-black"
             fixed-header
             hide-default-footer

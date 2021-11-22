@@ -170,7 +170,12 @@
                 <v-icon style="font-size:28px"> mdi-cube-send</v-icon> 
               </v-btn>
 
-              <v-btn 
+             
+              
+            </template>
+
+            <template v-slot:item.action2="{ item }">
+             <v-btn 
                 v-if="estatus.id === 2"
                 @click="modal_finalizar_partida = true;itemAFinalizar = item"
                 color="success" dark
@@ -179,6 +184,7 @@
                 <v-icon style="font-size:28px"> mdi-text-box-check-outline</v-icon> 
               </v-btn>
             </template>
+
 
           </v-data-table>
         </v-card>
@@ -219,7 +225,7 @@
       </v-dialog>
 
       <!-- MODAL FINALIZAR PARTIDA -->
-      <v-dialog v-model="modal_finalizar_partida" width="600px" persistent transition="dialog-bottom-transition">
+      <v-dialog v-model="modal_finalizar_partida" width="600px" persistent >
         <v-card class="pa-3">
           <v-card-subtitle align="center" class="subtitle-1 font-weight-black mt-3 black--text" style="word-break:normal;" > 
             SE FINALIZARA LA PARTIDA NÚMERO {{ itemAFinalizar.id }} DE LA ORDEN DE TRABAJO {{ itemAFinalizar.id_ot }} 
@@ -233,7 +239,7 @@
           <v-footer absolute fixed>
             <v-btn  
               dark color="error" text
-              @click="" 
+              @click="modal_finalizar_partida = false" 
             >
               No, Cancelar
             </v-btn> 
@@ -298,6 +304,8 @@
           { text: 'Emisor'          , align:'left'   , value: 'deptoemisor'   },
           { text: 'Enviado a'       , align:'left'   , value: 'departamento'   },
 					{ text: '' 		            , align: 'right'  , value: 'action' , sortable: false },
+					{ text: '' 		            , align: 'right'  , value: 'action2' , sortable: false },
+
       ],
       
       // SELECTORES
@@ -435,7 +443,9 @@
 
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {
-          id_movim : this.itemAFinalizar.id,
+          id_movim      : this.itemAFinalizar.id,
+          id_produccion : this.itemAFinalizar.id_produccion,
+          id_producto   : this.itemAFinalizar.id_producto,
           finalizacion: this.traerFechaActual() + ' ' + this.traerHoraActual(),
         };
         // ! FUNCION QUE MANDA A CREAR LA PROGRAMACION

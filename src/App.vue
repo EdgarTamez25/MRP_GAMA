@@ -99,7 +99,7 @@
             { text: 'Inicio'             , icon: 'home'                             , path: '/inicio'},
             { text: 'Proyector Master'   , icon: 'mdi-monitor-screenshot'           , path: '/proyector/master'},
             { text: 'Producción'         , icon: 'mdi-office-building-cog-outline'  , path: '/produccion'},
-            { text: 'Producto Final'     , icon: 'mdi-database-check'               , path: '/desarrollo/proyectos'},
+            { text: 'Producto Terminados', icon: 'mdi-database-check'               , path: '/productos/terminados'},
             { text: 'Ordenes de Trabajo' , icon: 'mdi-clipboard-text'                ,path: '/ordenes/de/trabajo'},
 
             ],

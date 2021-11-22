@@ -5,6 +5,9 @@ import Login   from '@/modules/AppController/Login'
 import Master from '@/modules/master';
 import OT from '@/modules/OT';
 import Produccion from '@/modules/produccion';
+import Productos_terminados from '@/modules/productos_terminados';
+
+
 
 Vue.use(Vuex)
 
@@ -22,6 +25,7 @@ export default new Vuex.Store({
     Login,
     Master,
     OT,
-    Produccion
+    Produccion,
+    Productos_terminados
   }
 })
