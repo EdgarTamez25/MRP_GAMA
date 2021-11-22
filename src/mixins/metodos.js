@@ -25,6 +25,7 @@ export default {
 		consultar_deptos_por_suc(id_sucursal){ 
 			return new Promise( (resolve) => {
 				this.$http.get('obtener.deptos.por.suc/' + id_sucursal).then((response)=>{
+					console.log("Response deptos x suc", response)
 					resolve(response.body)
 				}).catch(error =>{
 					console.log('error depto_por_suc', error)
