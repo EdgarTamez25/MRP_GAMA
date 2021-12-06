@@ -134,47 +134,46 @@
               <span v-if="item.urgencia === 3" class="error--text"> {{ item.solicitante}} </span>
             </template>
             <template v-slot:item.urgencia="{ item }" v-if="estatus.id != 1">
-              <v-btn text v-if="item.urgencia === 1" class="black--text" align="lef"> NORMAL </v-btn>
+              <v-btn text v-if="item.urgencia === 1" class="black--text"> NORMAL </v-btn>
               <v-btn text v-if="item.urgencia === 2" color="orange"> URGENTE </v-btn>
               <v-btn text v-if="item.urgencia === 3" color="error"> PRIORIDAD </v-btn>
             </template>
             <template v-slot:item.urgencia="props" v-else >
-                <v-edit-dialog 
-                  :return-value.sync="props.item.urgencia"
-                   @save="guardarUrgencia(props.item)"
-                   large 
-                   save-text="Guardar"
-                   cancel-text="Cancelar"
-                >
-                  <v-btn text v-if="props.item.urgencia === 1" class="black--text"> NORMAL </v-btn>
-                  <v-btn text v-if="props.item.urgencia === 2" color="orange"> URGENTE </v-btn>
-                  <v-btn text v-if="props.item.urgencia === 3" color="error"> PRIORIDAD </v-btn>
+              <v-edit-dialog 
+                :return-value.sync="props.item.urgencia"
+                @save="guardarUrgencia(props.item)"
+                large 
+                save-text="Guardar"
+                cancel-text="Cancelar"
+              >
+                <v-btn text v-if="props.item.urgencia === 1" class="black--text"> NORMAL </v-btn>
+                <v-btn text v-if="props.item.urgencia === 2" color="orange"> URGENTE </v-btn>
+                <v-btn text v-if="props.item.urgencia === 3" color="error"> PRIORIDAD </v-btn>
 
-                  <template v-slot:input >
-                    <v-card-text class="pa-0 mt-5" >
-                      <v-select
-                        :items="urgencias"
-                        item-text="nombre"
-                        item-value="id"
-                        label="Urgencia"
-                        hide-details
-                        v-model="props.item.urgencia"
-                      ></v-select>
+                <template v-slot:input >
+                  <v-card-text class="pa-0 mt-5" >
+                    <v-select
+                      :items="urgencias"
+                      item-text="nombre"
+                      item-value="id"
+                      label="Urgencia"
+                      hide-details
+                      v-model="props.item.urgencia"
+                    ></v-select>
 
-                      <v-textarea
-                        filled
-                        v-model="props.item.razon"
-                        label="Razon de urgencia"
-                        rows="2"
-                        v-if="props.item.razon"
-                        disabled
-                      ></v-textarea>
-                    </v-card-text >
-                    
-                  </template>
-                </v-edit-dialog>
-              </template>
-
+                    <v-textarea
+                      filled
+                      v-model="props.item.razon"
+                      label="Razon de urgencia"
+                      rows="2"
+                      v-if="props.item.razon"
+                      disabled
+                    ></v-textarea>
+                  </v-card-text >
+                  
+                </template>
+              </v-edit-dialog>
+            </template>
             
             <template v-slot:item.fecha_entrega="{ item }">
               <span v-if="item.urgencia === 1"  class="black--text"> {{ moment(item.fecha_entrega).format('LL') }} </span>
@@ -184,11 +183,21 @@
 
             <template v-slot:item.action="{ item }">
               <v-btn 
+                v-if="estatus.id === 1"
                 color="morado" 
                 dark fab small 
                 @click="programacionModal=true; programacion=item;"
               >
                 <v-icon> mdi-desktop-mac-dashboard</v-icon> 
+              </v-btn>
+
+              <v-btn 
+                v-if="estatus.id != 1"
+                color="celeste" 
+                dark fab small 
+                @click="distribucionModal=true; distribucion=item;"
+              >
+                <v-icon> mdi-map-marker-distance</v-icon> 
               </v-btn>
             </template>
           </v-data-table>
@@ -209,38 +218,17 @@
         </v-card>
       </v-dialog>
 
-
-      <v-dialog v-model="ModalSucursal" persistent width="500px">
-        <v-card class="pa-4">
-          <v-card-text class="font-weight-black subtitle-1">
-            SELECCIONE LA SUCURSAL EN LA CUAL SE PROGRAMARAN LOS PRODUCTOS
-          </v-card-text>
-          <v-card-text>
-            <v-select
-							:items="sucursales"
-							item-text="nombre"
-							item-value="id"
-							label="Sucursal"
-							placeholder="Sucursal"
-							append-icon="store"
-							hide-details
-							v-model="sucursal"
-							filled
-							return-object
-						></v-select>
-          </v-card-text>
-          <div class="mt-10"></div>
-          <v-footer absolute>
-            <v-btn color="error" outlined  @click="ModalSucursal = false">Cancelar </v-btn>
-            <v-spacer></v-spacer>
-            <v-btn color="green" dark @click="PrepararDatos()"> Procesar Información</v-btn>
-          </v-footer>
+      <!-- MODAL DISTRIBUCION -->
+      <v-dialog v-model="distribucionModal" width="700px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <DISTRIBUCION
+            :distribucion="distribucion"
+            @modal="distribucionModal = $event"
+          />
         </v-card>
-        
       </v-dialog>
 
       <overlay v-if="overlay"/>
-
 
     </v-row>
   </v-main>
@@ -249,83 +237,80 @@
 <script>
 	// import  metodos from '@/mixins/metodos.js';
   // import overlay     from '@/components/overlay.vue';
-
-  import Vue from 'vue'
   var moment = require('moment'); 
+  var accounting = require("accounting");
   import {mapGetters, mapActions} from 'vuex';
   import PROGRAMACION from '@/views/MASTER/programacion.vue'
-  
-  var accounting = require("accounting");
-  Vue.filter('currency', (val, dec) => { return accounting.formatMoney(val, '', dec) });
+  import DISTRIBUCION from '@/views/MASTER/distribucion.vue'
 
   export default {
 		// mixins:[metodos],
     components: {
       // overlay,
-      PROGRAMACION
+      PROGRAMACION,
+      DISTRIBUCION
 		},
     data:() =>({
-      page: 1,
-      pageCount: 0,
-      itemsPerPage: 20,
-      search: '',
-      singleSelect: false,
-      selected: [],
+      //! VARIABLES DE TABLA PRINCIPAÑ
+        page: 1,
+        pageCount: 0,
+        itemsPerPage: 20,
+        search: '',
+        headers: [
+            { text: 'OC'         , align: 'start' , value: 'oc'       },
+            { text: 'OT'         , align: 'left'  , value: 'id_ot'    },
+            { text: 'Producto'   , align: 'start' , value: 'codigo'   },
+            { text: 'Cantidad'   , align: 'left'  , value: 'cantidad' },
+            { text: 'Unidad'     , align: 'left'  , value: 'unidad'   },
+            { text: 'Cliente'    , align: 'left'  , value: 'nomcli'   },
+            { text: 'Concepto'   , align: 'left'  , value: 'concepto' },
+            { text: 'Solicitante', align: 'left'  , value: 'solicitante'},
+            { text: 'Urgencia'   , align: 'left'  , value: 'urgencia'  },
+            { text: 'Fecha de entrega'      , align: 'left'  , value: 'fecha_entrega'     },
+            { text: '' 		      , align: 'right' , value: 'action' , sortable: false },
+        ],
 
-      depto : { 
-        id:1, nombre:'FLEXOGRAFÍA'
-      },
-      deptos: [],	
-      estatus: {  
-        id: 1, nombre:'Pendiente'
-      },
-      Estatus:[ 
-        { id: 1, nombre:'Pendiente'},
-        { id: 2 ,nombre:'Programado'},
-        { id: 3, nombre:'Terminado'},
-      ],
-      sucursal:{ id:null, nombre:''},
-      sucursales:[],	
-      urgencias:[
-        { id:1, nombre:'NORMAL'   },
-        { id:2, nombre:'URGENTE'  },
-        { id:3, nombre:'PRIORIDAD'}
-      ],
-      fecha1:moment().subtract(1, 'months').startOf('month').format("YYYY-MM-DD"), 
-      fechamodal1:false,
-      fecha2: moment().subtract('months').endOf('months').format("YYYY-MM-DD"),
-      fechamodal2:false,
+      //! VARIABLES PARA SELECTORES
+        depto  : { id:1, nombre:'FLEXOGRAFÍA' },
+        deptos : [],	
+        
+        sucursal:{ id:null, nombre:''},
+        sucursales:[],	
+        
+        estatus: { id:1, nombre:'Pendiente' },
+        Estatus:[ 
+          { id: 1, nombre:'Pendiente'},
+          { id: 2 ,nombre:'Programado'},
+          { id: 3, nombre:'Terminado'},
+        ],
+        urgencias:[
+          { id:1, nombre:'NORMAL'   },
+          { id:2, nombre:'URGENTE'  },
+          { id:3, nombre:'PRIORIDAD'}
+        ],
 
-      ModalSucursal: false,
-      overlay: false,
-      alerta: { 
-        activo: false,
-        text: '',
-        color: 'error',
-      },
-      headers: [
-          { text: 'OC'         , align: 'start' , value: 'oc'       },
-          { text: 'OT'         , align: 'left'  , value: 'id_ot'    },
-          { text: 'Producto'   , align: 'start' , value: 'codigo'   },
-          { text: 'Cantidad'   , align: 'left'  , value: 'cantidad' },
-          { text: 'Unidad'     , align: 'left'  , value: 'unidad'   },
-          { text: 'Cliente'    , align: 'left'  , value: 'nomcli'   },
-          { text: 'Concepto'   , align: 'left'  , value: 'concepto' },
-          { text: 'Solicitante', align: 'left'  , value: 'solicitante'},
-          { text: 'Urgencia'   , align: 'left'  , value: 'urgencia'  },
-          { text: 'Fecha de entrega'      , align: 'left'  , value: 'fecha_entrega'     },
-					{ text: '' 		      , align: 'right' , value: 'action' , sortable: false },
-      ],
-      programacionModal: false,
-      programacion: {},
+        fecha1:moment().subtract(1, 'months').startOf('month').format("YYYY-MM-DD"), 
+        fechamodal1:false,
+        fecha2: moment().subtract('months').endOf('months').format("YYYY-MM-DD"),
+        fechamodal2:false,
+
+      //! VARIABLES DE CARGA
+        overlay: false,
+        alerta: { 
+          activo: false,
+          text: '',
+          color: 'error',
+        },
+      
+      //! VARIABLES DE MODALES
+        programacionModal: false,
+        programacion: {},
+        distribucionModal: false,
+        distribucion: {}
       
     }),
 
     created(){
-      // this.consultaDepartamentos();
-			// this.consultarSucursales(); //MANDO A CONSULTAR SUCURSALES A MIXINS
-      // console.log('datos', this.getdatosUsuario)
-
       this.init();
     },
 
@@ -335,9 +320,15 @@
 			estatus(){ this.init(); },
 		},
 
+    filters:{ 
+      currency(val, dec){
+        return accounting.formatMoney(val, '', dec)
+      }
+    },
+
     computed:{
 			...mapGetters('Master' ,['Loading','Parametros','Master']), // IMPORTANDO USO DE VUEX - (GETTERS)
-      // ...mapGetters('Login' ,['getdatosUsuario']), 
+      ...mapGetters('Login' ,['getdatosUsuario']), 
 
 			tamanioPantalla () {
 				switch (this.$vuetify.breakpoint.name) {
@@ -370,39 +361,6 @@
 					fecha2 : this.fecha2
         }
         this.obtenerDatosMonitor(payload);
-      },
-
-      validaInformacion(){
-        // console.log('selected', this.selected);
-        if(!this.selected.length){
-          this.alerta = { activo: true, text:'DEBES SELECCIONAR LOS PRODUCTOS QUE SE PROGRAMARAN', color:'error'}; return ;
-        }
-        this.ModalSucursal = true;
-        // this.programarProductos()
-      },
-
-      PrepararDatos(){
-        this.ModalSucursal = false; this.overlay = true
-        const payload = new Object({
-          creacion   : this.traerFechaActual() + ' ' + this.traerHoraActual(),   
-          id_creador : this.getdatosUsuario.id,
-          id_sucursal: this.sucursal.id,
-          detalle    : this.selected
-        })
-
-        this.programarProductos(payload);
-      },
-
-      programarProductos(data){
-
-        this.programaProductos(data).then(response =>{
-          this.alerta = { activo: true, text:response.bodyText, color:'green'};
-          this.init(); this.selected = [];
-        }).catch(error =>{
-          this.alerta = { activo: true, text:error.bodyText, color:'error'};
-        }).finally(()=>{
-          this.overlay = false
-        })
       },
 
       guardarUrgencia(item){

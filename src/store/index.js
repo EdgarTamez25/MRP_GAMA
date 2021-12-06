@@ -6,7 +6,8 @@ import Master from '@/modules/master';
 import OT from '@/modules/OT';
 import Produccion from '@/modules/produccion';
 import Productos_terminados from '@/modules/productos_terminados';
-
+import Entradas from '@/modules/entradas';
+import Salidas from '@/modules/salidas';
 
 
 Vue.use(Vuex)
@@ -26,6 +27,8 @@ export default new Vuex.Store({
     Master,
     OT,
     Produccion,
-    Productos_terminados
+    Productos_terminados,
+    Entradas,
+    Salidas
   }
 })

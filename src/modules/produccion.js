@@ -48,10 +48,10 @@ export default{
 			})
 		},
 		
-		agregar_producto_terminados({commit}, payload){
+		gemerar_nueva_entrada({commit}, payload){
 			return new Promise( (resolve, reject) => {
-				Vue.http.post('agregar.producto.terminado', payload).then(response=>{
-					console.log('PT', response)
+				Vue.http.post('generar.nueva.entrada', payload).then(response=>{
+					// console.log('PT', response)
 					resolve(response);
 				}).catch((error)=>{
 					console.log('error',error)

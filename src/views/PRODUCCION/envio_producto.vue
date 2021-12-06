@@ -219,7 +219,7 @@
     },
 
     methods:{
-      ...mapActions('Produccion' ,['obtener_datos_produccion','agregar_producto_terminados']), 
+      ...mapActions('Produccion' ,['obtener_datos_produccion','gemerar_nueva_entrada']), 
 
       validar_datos_envio(){
         if(this.getdatosUsuario.id_depto === this.datos.deptos.id){
@@ -250,8 +250,9 @@
             id_movim      : this.parametros.id,   // ID PARA ACTUALIZAR EL REGISTRO
           }
 
-          console.log('payload 2',payload);
-          this.agregar_producto_terminados(payload).then( response =>{
+          // console.log('payload 2',payload);
+          // return;
+          this.gemerar_nueva_entrada(payload).then( response =>{
             this.alerta = { activo: true, texto : response.bodyText, color : 'green' };
             this.cerrar_vista();
           }).catch( error =>{

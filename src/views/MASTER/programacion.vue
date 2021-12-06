@@ -211,14 +211,11 @@
 </template>
 
 <script>
-
-  import Vue from 'vue'
   import { mapGetters,mapActions } from 'vuex';
 	import metodos   from '@/mixins/metodos.js';
   import loading   from '@/components/loading.vue'
   import overlay   from '@/components/overlay.vue'
 	var accounting = require("accounting");
-  Vue.filter('currency', (val, dec) => { return accounting.formatMoney(val, '', dec) });
 
   export default {
     mixins:[metodos],
@@ -263,6 +260,12 @@
         dialogDelete: false,
 
         overlay: false,
+      }
+    },
+
+    filters:{
+      currency(val, dec){
+        return accounting.formatMoney(val, '', dec)
       }
     },
 

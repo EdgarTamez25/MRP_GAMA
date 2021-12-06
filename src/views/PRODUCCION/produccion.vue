@@ -14,8 +14,15 @@
         <v-card outlined class="pa-3">
           <v-row class="pa-1 py-0">
 
-						<v-col cols="12" sm="6" >
+						<v-col cols="12" sm="2" md="4" >
 							<v-card-actions class="font-weight-black headline   " > PRODUCCIÓN </v-card-actions>
+						</v-col>
+
+            <v-col cols="12" sm="4" md="2" >
+							<v-select
+									v-model="depto" :items="departamentos" item-text="nombre" item-value="id" outlined color="celeste"  
+									dense hide-details  label="Departamentos" return-object placeholder ="Departamentos"  
+							></v-select>
 						</v-col>
 
 						<v-col cols="12" sm="4" md="2"  >
@@ -24,13 +31,6 @@
                  hide-details  placeholder="Estatus " return-object outlined append-icon="mdi-circle-slice-5"
               ></v-select> 
 						</v-col>
-
-						<v-col cols="12" sm="4" md="2" >
-							<v-select
-									v-model="depto" :items="departamentos" item-text="nombre" item-value="id" outlined color="celeste"  
-									dense hide-details  label="Departamentos" return-object placeholder ="Departamentos"  
-							></v-select>
-						</v-col>  
 
 						<v-col cols="6" sm="4" md="2" > <!-- FECHA DE COMPROMISO -->
 							<v-dialog ref="fecha1" v-model="fechamodal1" :return-value.sync="fecha1" persistent width="290px">
@@ -127,8 +127,7 @@
               <span  > {{ moment(item.creacion).format('LL')  }} </span>
             </template>
 
-            <template v-slot:item.dias="{ item }">
-             <!-- <span :class="[`${color}--text`, ]" v-if="item.dias === 0 "> -->
+            <template v-slot:item.dias="{ item }" v-if="estatus.id == 0 || estatus.id == 1 || estatus.id == 2 ">
               <span :class="[`red--text`, ]" v-if="item.dias === 0 "> 
                 HOY SE ENTREGA 
               </span>
@@ -138,6 +137,12 @@
               <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias < 0 "> 
                 FUERA DE TIEMPO 
               </span>
+            </template>
+
+            <template v-slot:item.dias="{ item }" v-else>
+              <span class="success--text" v-if="estatus.id === 3 "> TERMINADO </span>
+              <span class="success--text" v-if="estatus.id === 4 "> ENVIADO </span>
+
             </template>
 
             <template v-slot:item.deptoemisor="{ item }">
@@ -318,7 +323,6 @@
         { id: 2 ,nombre:'Produciendo'},
         { id: 4, nombre:'Enviado'},
         { id: 3, nombre:'Terminado'},
-
       ],
       urgencias:[
         { id:1, nombre:'NORMAL'   },
@@ -407,7 +411,7 @@
           id_depto  : this.depto.id,
           estatus: this.estatus.id,
 					fecha1 : this.fecha1,
-					fecha2 : this.fecha2
+					fecha2 : this.fecha2,
         }
 
         if(this.estatus.id === 4){
@@ -444,6 +448,7 @@
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {
           id_movim      : this.itemAFinalizar.id,
+          id_det_ot     : this.itemAFinalizar.id_det_ot,
           id_produccion : this.itemAFinalizar.id_produccion,
           id_producto   : this.itemAFinalizar.id_producto,
           finalizacion: this.traerFechaActual() + ' ' + this.traerHoraActual(),

@@ -46,8 +46,6 @@
   
     </v-navigation-drawer>
 
-
-
     <v-app-bar app color="rosa" dark class="elevation-4 ma-2" style="border-radius:10px">
       <v-img 
         src="http://producciongama.com/CRM-GAMA-2020/imagenes/logo.png" 
@@ -99,10 +97,11 @@
             { text: 'Inicio'             , icon: 'home'                             , path: '/inicio'},
             { text: 'Proyector Master'   , icon: 'mdi-monitor-screenshot'           , path: '/proyector/master'},
             { text: 'Producción'         , icon: 'mdi-office-building-cog-outline'  , path: '/produccion'},
+            { text: 'Ordenes de Trabajo' , icon: 'mdi-clipboard-text'               , path: '/ordenes/de/trabajo'},
+            { text: 'Entradas'           , icon: 'mdi-human-dolly'                  , path: '/entradas'},
+            { text: 'Salidas'            , icon: 'mdi-truck-fast-outline'           , path: '/salidas'},
             { text: 'Producto Terminados', icon: 'mdi-database-check'               , path: '/productos/terminados'},
-            { text: 'Ordenes de Trabajo' , icon: 'mdi-clipboard-text'                ,path: '/ordenes/de/trabajo'},
-
-            ],
+          ],
         },
       ],
     }),
