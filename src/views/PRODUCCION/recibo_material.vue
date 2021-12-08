@@ -138,8 +138,8 @@
 
     data(){
       return {
+        componente: 'producción',
         cantidad_recibida: 0,
-        
         alerta: { 
           activo: false,
           texto: '',
@@ -173,9 +173,20 @@
       ...mapActions('Produccion' ,['obtener_datos_produccion']), 
 
 
-      recibir_material(){
-        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+      async recibir_material(){
+        let permiso = await this.verificar_permiso_usuario(this.componente);
         this.alerta_recibir_material = false; // CIERRO MODAL DE CONFIRMACION
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
 
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {

@@ -43,8 +43,29 @@
 
         </template>
       </v-list>
+
+      <v-footer absolute  class="pa-0 my-2" v-if="permisos_usuario.develop">
+        <v-list-item color= "celeste" :to="{ name:'Configuracion' }">
+          <v-list-item-icon>
+            <v-icon > mdi-account-cog </v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content >
+            <v-list-item-title class="subtitle-2" >
+              Configuración
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-footer>
   
     </v-navigation-drawer>
+
+    <v-snackbar v-model="alerta.activo" multi-line vertical top right :color="alerta.color" > 
+      <strong> {{alerta.texto}} </strong>
+      <template v-slot:action="{ attrs }">
+        <v-btn color="white" text @click="alerta.activo = false" v-bind="attrs"> Cerrar </v-btn>
+      </template>
+    </v-snackbar>
 
     <v-app-bar app color="rosa" dark class="elevation-4 ma-2" style="border-radius:10px">
       <v-img 
@@ -58,10 +79,17 @@
        <!-- hidden-sm-and-down-->
       <v-spacer></v-spacer>
       
-      <v-toolbar-items @click="cerrar_sesion=true">
-        <v-icon right>mdi-exit-to-app</v-icon>
+      <v-toolbar-items @click="cerrar_sesion=true" >
+        <v-btn text> <v-icon >mdi-exit-to-app</v-icon> </v-btn>
       </v-toolbar-items>
     </v-app-bar>
+
+    <v-overlay v-if="blocked">
+      <v-progress-circular
+        indeterminate
+        size="64"
+      ></v-progress-circular>
+    </v-overlay>
 
     <v-main>
       <v-card  height="100%" style="border-radius: 0px;">
@@ -73,6 +101,20 @@
       </v-card>
     </v-main>
 
+    <v-dialog v-model="cerrar_sesion" width="400px">
+      <v-card >
+        <v-card-title class="font-weight-black text-center text-h5" style="word-break:normal;">
+         ¿Estás seguro de que quiere cerrar la sesión?
+        </v-card-title>
+        <v-divider class="mt-3"></v-divider>
+        <v-card-actions>
+          <v-btn color="morado"  dark @click="cerrar_sesion=false">no, Cancelar</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="celeste" dark text  @click="salir()">SÍ, Cerrar Sesión</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-app>
 </template>
 
@@ -83,10 +125,11 @@
     name: 'App',
 
     data: () => ({
-      syster_number: 2,
+      syster_number: 6,
       urlSistemaPrincipal: 'http://producciongama.com/',
       
-      blocked: false,
+      alerta: { activo: false, texto:'', color:'error' },
+      blocked: true,
       drawer: null,
       cerrar_sesion:false,
 
@@ -101,13 +144,15 @@
             { text: 'Entradas'           , icon: 'mdi-human-dolly'                  , path: '/entradas'},
             { text: 'Salidas'            , icon: 'mdi-truck-fast-outline'           , path: '/salidas'},
             { text: 'Producto Terminados', icon: 'mdi-database-check'               , path: '/productos/terminados'},
+            // { text: 'Configuración'      , icon: 'mdi-account-cog'                     , path: '/configuracion/usuarios'},
+
           ],
         },
       ],
     }),
 
-    created(){
-      // this.overlay = true;
+    async created(){
+      this.overlay = true;
       if (typeof(Storage) !== "undefined") {
           // VERIFICO SI EXISTE UN USUARIO ACTIVO 
           if(localStorage.getItem("KeyLogger") != null){
@@ -117,33 +162,45 @@
                     payload.sistema  = this.syster_number
 
               this.ObtenerDatosUsuario(payload).then(response =>{
-                this.alerta = { activo: true, texto: `HOLA DE NUEVO ${ response.nombre }`, color :'success', vertical:true  };
+                this.obtener_permisos_usuario(response.id); // MANDO A CONSULTAR PERMISOS
+                this.alerta = { 
+                  activo: true, 
+                  texto: `HOLA DE NUEVO ${ response.nombre }`, 
+                  color :'success', 
+                };
                 this.blocked = false;  // DESACTIVO BLOCKEO
               }).catch( error=>{       // OBTENGO LA INFORMACION DEL USUARIO
-                this.alerta = { activo: true, texto: error.bodyText, color:'error', vertical:true }
-                // window.location.href = this.urlSistemaPrincipal;
+                this.alerta = { activo: true, texto: error.bodyText, color:'error' }
+                window.location.href = this.urlSistemaPrincipal;
               });  
             }).catch( error =>{
-              // window.location.href = this.urlSistemaPrincipal;
+              window.location.href = this.urlSistemaPrincipal;
             })
             if(this.$router.currentRoute.name != 'Inicio'){  // COMPARO LA RUTA EN LA QUE ME ENCUENTRO 
               this.$router.push({ name: 'Inicio' });         // SI ES DIFERENTE ENRUTO A PAGINA ARRANQUE
             }
           }else{ 
-          //  window.location.href = this.urlSistemaPrincipal;
+           window.location.href = this.urlSistemaPrincipal;
           }
       } else {
-        // window.location.href = this.urlSistemaPrincipal;
+        window.location.href = this.urlSistemaPrincipal;
       }
     },
 
     computed:{
-      ...mapGetters('Login' ,['getLogeado','getdatosUsuario']), 
+      ...mapGetters('Login' ,['getLogeado','getdatosUsuario','permisos_usuario']), 
     },
 
 
     methods:{
-      ...mapActions('Login' ,['salirLogin','ObtenerDatosUsuario','validaSession']), 
+      ...mapActions('Login' ,['salirLogin','ObtenerDatosUsuario','validaSession','obtener_permisos_usuario']), 
+      
+      salir(){
+        this.alerta = { activo: true, texto: `HASTA PRONTO ${ this.getdatosUsuario.nombre }`, color :'success'  };
+        this.cerrar_sesion= false;
+        this.salirLogin()
+        this.$store.dispatch("salir")
+      },
 
     }
 

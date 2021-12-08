@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Login   from '@/modules/AppController/Login'
+import Usuarios from '@/modules/Usuarios';
 
 import Master from '@/modules/master';
 import OT from '@/modules/OT';
@@ -21,8 +22,10 @@ export default new Vuex.Store({
     salir({commit}){
       setTimeout(()=>{ window.location.href = "http://producciongama.com/"; }, 2000)
     }
+    
   },
   modules: {
+    Usuarios,
     Login,
     Master,
     OT,

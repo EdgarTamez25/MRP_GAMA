@@ -14,21 +14,22 @@
         <v-card outlined class="pa-3">
           <v-row class="pa-1 py-0">
 
-						<v-col cols="12" sm="2" md="4" >
+						<v-col cols="12" sm="4" >
 							<v-card-actions class="font-weight-black headline   " > PRODUCCIÓN </v-card-actions>
 						</v-col>
-
+            
             <v-col cols="12" sm="4" md="2" >
 							<v-select
 									v-model="depto" :items="departamentos" item-text="nombre" item-value="id" outlined color="celeste"  
-									dense hide-details  label="Departamentos" return-object placeholder ="Departamentos"  
+									dense hide-details  label="Departamento" return-object placeholder ="Departamento"
+                  :disabled="permisos_usuario.develop? false:true" 
 							></v-select>
 						</v-col>
 
 						<v-col cols="12" sm="4" md="2"  >
 							<v-select
                 v-model="estatus" :items="Estatus" item-text="nombre" item-value="id"  dense
-                 hide-details  placeholder="Estatus " return-object outlined append-icon="mdi-circle-slice-5"
+                 hide-details label="Estatus " return-object outlined append-icon="mdi-circle-slice-5"
               ></v-select> 
 						</v-col>
 
@@ -64,6 +65,7 @@
 							</v-dialog>
 						</v-col>
 					</v-row>
+
           <!-- BOTONES DE ACCION *BUSCAR + RECARGAR-->
           <v-card-actions class="mt-1">
             <v-text-field
@@ -289,6 +291,7 @@
       ENVIOP
 		},
     data:() =>({
+      componente: 'producción',
       // TABLA PRINCIPAL
       page: 1,
       pageCount: 0,
@@ -334,7 +337,7 @@
       fecha2: moment().subtract('months').endOf('months').format("YYYY-MM-DD"),
       fechamodal2:false,
 
-      depto: { id:1, nombre:'FLEXOGRAFIA'},
+      depto: { id:null, nombre:''},
       departamentos:[],
       // MODALES 
       parametros: {}, 
@@ -366,6 +369,8 @@
     async created(){
       this.colorBar();
       this.departamentos = await this.consultar_deptos_por_suc(this.getdatosUsuario.id_sucursal);
+      this.depto = { id: this.getdatosUsuario.id_depto }
+      // console.log('deptos', this.departamentos);
       this.init();
     },
 
@@ -378,7 +383,7 @@
 
     computed:{
 			...mapGetters('Produccion' ,['Loading','Parametros','Produccion']), // IMPORTANDO USO DE VUEX - (GETTERS)
-      ...mapGetters('Login' ,['getdatosUsuario']), 
+      ...mapGetters('Login' ,['getdatosUsuario','permisos_usuario']), 
 
 			tamanioPantalla () {
 				switch (this.$vuetify.breakpoint.name) {
@@ -406,9 +411,10 @@
       ...mapActions('Produccion' ,['obtener_datos_produccion','obtener_productos_enviados']), 
 
       async init(){
+
         const payload = {
-          // id_depto  : this.getdatosUsuario.id_depto,
-          id_depto  : this.depto.id,
+          // id_depto  : this.depto.id,
+          id_depto  : this.depto.id ? this.depto.id: this.getdatosUsuario.id_depto, 
           estatus: this.estatus.id,
 					fecha1 : this.fecha1,
 					fecha2 : this.fecha2,
@@ -441,9 +447,21 @@
         }
       },
 
-      finalizar_partida(){
-        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+      async finalizar_partida(){
+
+        let permiso = await this.verificar_permiso_usuario(this.componente);
         this.modal_finalizar_partida = false; // CIERRO MODAL DE CONFIRMACION
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
 
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {

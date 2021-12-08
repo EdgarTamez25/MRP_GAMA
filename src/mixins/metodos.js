@@ -1,7 +1,12 @@
 import Vue from 'vue'
+import { mapGetters,mapActions } from 'vuex';
 
 export default {
+	computed:{
+		...mapGetters('Login' ,['getdatosUsuario','permisos_usuario']), 
+	},
 	methods: {
+
 		traerFechaActual(){
 			var f = new Date(); 
 			return f.getFullYear() +'-'+ (f.getMonth() + 1 < 10? '0' + (f.getMonth() + 1): f.getMonth() + 1 ) +'-'+ (f.getDate()<10?'0'+f.getDate():f.getDate());
@@ -11,6 +16,34 @@ export default {
 			return (f.getHours()<10? '0'+f.getHours(): f.getHours()) + ':' + (f.getMinutes()<10? '0'+ f.getMinutes(): f.getMinutes())
 		},
     
+		verificar_permiso_usuario(componente){
+			return new Promise( (resolve) => {
+				//* EVALUO SI EL USUARIO TIENE PERMISOS ASIGNADOS
+				if(!this.permisos_usuario) {
+					// console.log('permisos', this.permisos_usuario)
+					resolve(false);
+				}
+
+				switch(componente) {
+					case 'master':
+						this.permisos_usuario.master? resolve(true):resolve(false);
+						break;
+					case 'producción':
+						this.permisos_usuario.produccion ? resolve(true):resolve(false);
+						break;
+					case 'OT':
+						this.permisos_usuario.ot ? resolve(true):resolve(false);
+						break;
+					case 'entradas':
+						this.permisos_usuario.entradas ? resolve(true):resolve(false);
+						break;
+					case 'producto final':
+						this.permisos_usuario.pt ? resolve(true):resolve(false);
+						break;
+				}
+			})
+		},
+
     // SUCURSALES 
 		consultar_sucursales(){ 
 			return new Promise( (resolve) => {
@@ -51,16 +84,26 @@ export default {
 				})
 			})	
 		},
-
-		consulta_prod_por_cliente(payload){  // AUTOCOMPLETE -> CLIENTES
+		
+		consultar_productos_cliente(id_cliente){  // REMPLAZO DE LA VISTA ALTA DE OT
 			return new Promise( resolve => {
-				this.$http.post('productos.cliente.deptos', payload).then((response)=>{
+				this.$http.get('productos.cliente/'+ id_cliente).then((response)=>{
 					resolve(response.body);
 				}).catch(error =>{
 					console.log('error', error)
 				})
 			})	
 		},
+
+		// consulta_prod_por_cliente(payload){  // AUTOCOMPLETE -> CLIENTES
+		// 	return new Promise( resolve => {
+		// 		this.$http.post('productos.cliente.deptos', payload).then((response)=>{
+		// 			resolve(response.body);
+		// 		}).catch(error =>{
+		// 			console.log('error', error)
+		// 		})
+		// 	})	
+		// },
 
 		consuta_tipos_envios(){  // TIPO DE ENVIOS
 			return new Promise( resolve => {

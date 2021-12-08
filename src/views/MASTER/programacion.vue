@@ -229,6 +229,7 @@
 
     data(){
       return {
+        componente: 'master', // SE ASIGNA MASTER COMO NOMBRE DEL COMPONENTE PADRE
         tipo_prog: { id:null, nombre:''},
 
         Programacion :[],
@@ -389,9 +390,20 @@
          this.alerta_generar_programacion = true;
       },
 
-      generar_nueva_programacion(){
-        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+      async generar_nueva_programacion(){
+        let permiso = await this.verificar_permiso_usuario(this.componente);
         this.alerta_generar_programacion = false; // CIERRO MODAL DE CONFIRMACION
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
 
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {

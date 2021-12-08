@@ -151,6 +151,7 @@
 
     data(){
       return {
+        componente:'producto final',
         cantidad_salir: 0,
         referencia:'',
         
@@ -198,9 +199,21 @@
         this.alerta_salida_producto = true;
       },
 
-      generar_salida_producto(){
-        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+      async generar_salida_producto(){
+
+        let permiso = await this.verificar_permiso_usuario(this.componente);
         this.alerta_salida_producto = false; // CIERRO MODAL DE CONFIRMACION
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
         
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {

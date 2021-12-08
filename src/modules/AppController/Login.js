@@ -6,7 +6,7 @@ export default{
 		login:false,
 		datosUsuario:[],
 		sistemas:[],
-
+		permisos: {}
 	},
 
 	mutations:{
@@ -23,6 +23,10 @@ export default{
 		SALIR(state){
 			state.login = false;
 			state.datosUsuario = [];
+		},
+
+		PERMISOS_USUARIO(state, data){
+			state.permisos = data;
 		}
 	},
 
@@ -62,7 +66,7 @@ export default{
 		ObtenerDatosUsuario({commit},payload){
 			return new Promise((resolve, reject) => {
 				Vue.http.post('obtener.datos.usuario',payload ).then(response =>{
-					console.log('USUARIO',response.body)
+					// console.log('USUARIO',response.body)
 					resolve(response.body.datosUsuario)
 					commit('DATOS_USUARIO', response.body.datosUsuario );
 					commit('SISTEMAS'     , response.body.sistemas);
@@ -73,7 +77,23 @@ export default{
 					reject(error)
 				})	
 			});
-			
+		},
+
+ 		obtener_permisos_usuario({commit}, id_usuario){
+			return new Promise((resolve, reject) => {
+				Vue.http.get('obtener.permisos_usuario/'+ id_usuario ).then(response =>{
+					if(response.body.length){
+						commit('PERMISOS_USUARIO', response.body[0] );
+					}else{
+						commit('PERMISOS_USUARIO', [] );
+					}
+					resolve(true)
+					// console.log('USUARIO',response.body)
+				}).catch( error =>{
+					console.log('valida error', error.body)
+					reject(error)
+				})	
+			});
 		},
 
 
@@ -99,6 +119,10 @@ export default{
 
 		getSistemas(state){
 			return state.sistemas;
+		},
+
+		permisos_usuario(state){
+			return state.permisos;
 		}
 
 	}

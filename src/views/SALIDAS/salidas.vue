@@ -20,7 +20,8 @@
 						<v-col cols="12" sm="4" md="2">
 							<v-select
 									v-model="sucursal" :items="sucursales" item-text="nombre" item-value="id" outlined color="celeste"  
-									dense hide-details  label="Sucursales" return-object placeholder ="Sucursales"  
+									dense hide-details  label="Sucursales" return-object
+                  :disabled="permisos_usuario.develop? false:true"  
 							></v-select>
 						</v-col> 
 
@@ -185,7 +186,7 @@
 
     computed:{
 			...mapGetters('Salidas' ,['Loading','Parametros','salidas']), // IMPORTANDO USO DE VUEX - (GETTERS)
-      ...mapGetters('Login' ,['getdatosUsuario']), 
+      ...mapGetters('Login' ,['getdatosUsuario','permisos_usuario']), 
 
 			tamanioPantalla () {
 				switch (this.$vuetify.breakpoint.name) {

@@ -17,19 +17,20 @@
 							<v-card-actions class="font-weight-black headline  py-0 mt-1 " > ENTRADAS </v-card-actions>
 						</v-col>
 
+            <v-col cols="12" sm="4" md="2">
+							<v-select
+									v-model="sucursal" :items="sucursales" item-text="nombre" item-value="id" outlined color="celeste"  
+									dense hide-details  label="Sucursales" return-object 
+                  :disabled="permisos_usuario.develop? false:true" 
+							></v-select>
+						</v-col> 
+
 						<v-col cols="12" sm="4" md="2" >
 							<v-select
                 v-model="estatus" :items="Estatus" item-text="nombre" item-value="id"  dense label="Estatus"
                  hide-details  placeholder="Estatus" return-object outlined append-icon="mdi-circle-slice-5"
               ></v-select> 
 						</v-col>
-
-						<v-col cols="12" sm="4" md="2">
-							<v-select
-									v-model="sucursal" :items="sucursales" item-text="nombre" item-value="id" outlined color="celeste"  
-									dense hide-details  label="Sucursales" return-object placeholder ="Sucursales"  
-							></v-select>
-						</v-col> 
 
             <v-col cols="6" sm="4" md="2" > <!-- FECHA DE COMPROMISO -->
 							<v-dialog ref="fecha1" v-model="fechamodal1" :return-value.sync="fecha1" persistent width="290px">
@@ -222,7 +223,7 @@
 
     computed:{
 			...mapGetters('Entradas' ,['Loading','Parametros','entradas']), // IMPORTANDO USO DE VUEX - (GETTERS)
-      ...mapGetters('Login' ,['getdatosUsuario']), 
+      ...mapGetters('Login' ,['getdatosUsuario','permisos_usuario']), 
 
 			tamanioPantalla () {
 				switch (this.$vuetify.breakpoint.name) {

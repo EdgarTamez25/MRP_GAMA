@@ -132,6 +132,7 @@
                 </v-card-actions>
               </v-col>
 
+              <!--
               <v-col cols="12" sm="6">
                 <v-select
                   v-model="editDetalle.depto" :items="deptos" item-text="nombre" item-value="id" filled color="celeste" 
@@ -139,6 +140,7 @@
                   
                 ></v-select> 
               </v-col> 
+              -->
               <v-col cols="12" sm="6">    
                 <v-autocomplete
                   v-model="editDetalle.producto" :items="productos"  item-text="codigo" item-value="id" label="Productos" 
@@ -239,6 +241,7 @@
 	  ],
 	  data () {
 			return {
+        componente:'OT',
         // VARIABLES PRINCIPALES
         idEditar: null,
         idAEliminar: null,
@@ -248,14 +251,14 @@
         dialogDelete:false,
         editedIndex: -1,
         defaultDetalle:{ 
-          depto   : { id:null, nombre:''},
+          // depto   : { id:null, nombre:''},
           producto: {id:null, nombre:''},
           urgencia: { id: null, nombre:''},
           cantidad: null, 
           fecha   : new Date().toISOString().substr(0, 10),
         },
         editDetalle:{
-          depto   : { id:null, nombre:''},
+          // depto   : { id:null, nombre:''},
           producto: {id:null, nombre:''},
           urgencia: { id: null, nombre:''},
           cantidad: null, 
@@ -282,21 +285,20 @@
 		
 		async created(){
       this.clientes = await this.consultar_Clientes();
-      this.deptos   = await this.consultar_deptos_por_suc(2);
       this.usuarios = await this.consultar_Usuarios();
 			// this.validarModoVista(); 	  // VALIDO EL MODO DE LA VISTA
 		},
 			
 		computed:{
 			// IMPORTANDO USO DE VUEX - PRODUCTOS (GETTERS)
-      ...mapGetters('Login'    ,['getdatosUsuario']), 
+      ...mapGetters('Login',['getdatosUsuario']), 
 			...mapGetters('OT',['Parametros']), // IMPORTANDO USO DE VUEX - (GETTERS)
 
       VALIDACION_PARTIDA(){
-        return this.editDetalle.depto.id != null && 
-               this.editDetalle.producto.id != null &&
+        return this.editDetalle.producto.id != null &&
                this.editDetalle.cantidad > 0 &&
                this.editDetalle.urgencia.id != null;
+              //  this.editDetalle.depto.id != null && 
       }
 		},
 
@@ -308,17 +310,20 @@
         // this.validarModoVista(); 	
       },
 
-      async 'editDetalle.depto'(){
-        if(this.cliente.id && this.editDetalle.depto){
-          const payload = {
-            id_cliente : this.cliente.id,
-            id_depto   : this.editDetalle.depto.id 
-        }
-          this.productos = await this.consulta_prod_por_cliente(payload);
-        }else{
-          return 
-        }
+      async cliente(){
+        this.productos = await this.consultar_productos_cliente(this.cliente.id);
       },
+      // async 'editDetalle.depto'(){
+      //   if(this.cliente.id && this.editDetalle.depto){
+      //     const payload = {
+      //       id_cliente : this.cliente.id,
+      //       id_depto   : this.editDetalle.depto.id 
+      //   }
+      //     this.productos = await this.consulta_prod_por_cliente(payload);
+      //   }else{
+      //     return 
+      //   }
+      // },
     },
 
 		methods:{
@@ -382,8 +387,20 @@
 				this.PrepararPeticion()
 			},
 
-      PrepararPeticion(){
-        this.overlay = true; 
+      async PrepararPeticion(){
+        let permiso = await this.verificar_permiso_usuario(this.componente);
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
+
         // FORMAR ARRAY A MANDAR
         const payload = {
           id_cliente     : this.cliente.id,
@@ -397,7 +414,7 @@
           fecha_procesado: this.traerFechaActual() + ' ' + this.traerHoraActual(),
           sistema        : 'MRP'
         }
-        console.log('payload', payload);
+        // console.log('payload', payload);
 
         this.$http.post('crear.orden.trabajo', payload).then( response =>{
             this.alerta = { activo: true, texto: response.bodyText, color:'green'};

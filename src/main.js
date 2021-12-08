@@ -8,7 +8,7 @@ import VueResource from 'vue-resource'
 import moment from 'moment'
 
 
-Vue.config.productionTip = false
+Vue.config.productionTip = true
 Vue.use(VueResource)
 Vue.prototype.moment = moment
 moment.locale('es');

@@ -162,6 +162,7 @@
 
     data(){
       return {
+        componente: 'producción',
         cantidad_recibida: 0,
 
         detosDefault:{
@@ -234,9 +235,21 @@
         this.alerta_envio_material = true;
       },
 
-      evaluar_envio_de_producto(){
-        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+      async evaluar_envio_de_producto(){
+
+        let permiso = await this.verificar_permiso_usuario(this.componente);
         this.alerta_envio_material = false; // CIERRO MODAL DE CONFIRMACION
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
 
         if(this.datos.deptos.pt === 1){
           const payload = {

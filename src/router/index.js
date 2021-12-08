@@ -10,6 +10,8 @@ import Entradas from '@/views/ENTRADAS/entradas.vue'
 import Salidas from '@/views/SALIDAS/salidas.vue'
 
 
+import Configuracion from '@/views/CONFIGURACION/configuracion.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -20,6 +22,7 @@ const routes = [
   { path: '/productos/terminados' , name: 'Productos_Terminados' , component: Productos_Terminados },
   { path: '/entradas'             , name: 'Entradas'             , component: Entradas },
   { path: '/salidas'              , name: 'Salidas'              , component: Salidas },
+  { path: '/configuracion/usuarios', name: 'Configuracion'       , component: Configuracion },
   { path: '/ordenes/de/trabajo'   , name: 'Ordenes_de_Trabajo'	 , component:()=> import('@/views/OT/ordenes_trabajo.vue')},
 ]
 

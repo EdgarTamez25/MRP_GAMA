@@ -274,6 +274,7 @@
 	  ],
 	  data () {
 			return {
+        componente:'OT',
         // VARIABLES PRINCIPALES
         idEditar: null,
         idAEliminar: null,
@@ -401,6 +402,7 @@
       },
 
       editaPartida(){
+
         if(this.modoVista === 1 ){
             this.detalle = this.detalle.map( item => { 
             if(item.id === this.idEditar){
@@ -507,8 +509,20 @@
 				this.PrepararPeticion()
 			},
 
-			PrepararPeticion(){
-        this.overlay = true; 
+			async PrepararPeticion(){
+        let permiso = await this.verificar_permiso_usuario(this.componente);
+        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
+
         // FORMAR ARRAY A MANDAR
         const payload = new Object();
               // payload.id_depto     = this.depto.id,
