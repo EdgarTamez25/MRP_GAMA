@@ -192,10 +192,26 @@
           return;
         }
 
-        if(this.cantidad_salir > this.parametros.cantidad){
-          this.alerta = { activo: true, texto:'NO PUEDES DAR SALIDA A UNA CANTIDAD MAYOR A LA EXISTENTE', color:'error'};
-          return;
+        let existencia = this.parametros.cantidad >= this.cantidad_salir ? true: false;
+
+        if(!existencia){
+          this.alerta = { 
+            activo: true, 
+            texto:'NO PUEDES DAR SALIDA A UNA CANTIDAD MAYOR A LA EXISTENTE', 
+            color:'error'
+          };
+          return; 
         }
+        // if(this.parametros.cantidad >= this.cantidad_salir){
+        //   console.log('cantidad_salir', this.cantidad_salir);
+        //   console.log('parametros.cantidad', this.parametros.cantidad);
+        // }
+
+        // if(this.cantidad_salir <= this.parametros.cantidad){
+         
+        //   this.alerta = { activo: true, texto:'NO PUEDES DAR SALIDA A UNA CANTIDAD MAYOR A LA EXISTENTE', color:'error'};
+        //   return;
+        // }
         this.alerta_salida_producto = true;
       },
 

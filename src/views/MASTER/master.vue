@@ -4,9 +4,9 @@
       <v-col cols="12">
 
         <v-snackbar v-model="alerta.activo" multi-line vertical top right :color="alerta.color" > 
-          <strong> {{alerta.text}} </strong>
+          <strong> {{alerta.texto}} </strong>
           <template v-slot:action="{ attrs }">
-            <v-btn color="white" text @click="alerta.activo = false" v-bind="attrs"> Cerrar </v-btn>
+            <v-btn color="white" texto @click="alerta.activo = false" v-bind="attrs"> Cerrar </v-btn>
           </template>
         </v-snackbar>
         
@@ -235,7 +235,7 @@
 </template>
 
 <script>
-	// import  metodos from '@/mixins/metodos.js';
+	import  metodos from '@/mixins/metodos.js';
   // import overlay     from '@/components/overlay.vue';
   var moment = require('moment'); 
   var accounting = require("accounting");
@@ -244,13 +244,14 @@
   import DISTRIBUCION from '@/views/MASTER/distribucion.vue'
 
   export default {
-		// mixins:[metodos],
+		mixins:[metodos],
     components: {
       // overlay,
       PROGRAMACION,
       DISTRIBUCION
 		},
     data:() =>({
+        componente: 'master', // SE ASIGNA MASTER COMO NOMBRE DEL COMPONENTE PADRE
       //! VARIABLES DE TABLA PRINCIPAÑ
         page: 1,
         pageCount: 0,
@@ -298,7 +299,7 @@
         overlay: false,
         alerta: { 
           activo: false,
-          text: '',
+          texto: '',
           color: 'error',
         },
       
@@ -363,8 +364,25 @@
         this.obtenerDatosMonitor(payload);
       },
 
-      guardarUrgencia(item){
-        this.$http.put('actualiza.urgencia.det.ot/'+ item.id, item);
+      async guardarUrgencia(item){
+
+        let permiso = await this.verificar_permiso_usuario(this.componente);
+
+        if(!permiso){
+          this.overlay = false
+          this.alerta = { 
+            activo: true,
+            texto : `Lo sentimos, no tienes permiso de modificar información relacionada con ${ this.componente }`,
+            color : 'error'
+          };
+          return;
+        }
+
+        this.$http.put('actualiza.urgencia.det.ot/'+ item.id, 
+          { 
+            ...item, 
+            id_usuario: this.getdatosUsuario.id 
+          });
       }
     }
 

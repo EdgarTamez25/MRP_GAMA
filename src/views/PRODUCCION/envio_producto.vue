@@ -220,7 +220,7 @@
     },
 
     methods:{
-      ...mapActions('Produccion' ,['obtener_datos_produccion','gemerar_nueva_entrada']), 
+      ...mapActions('Produccion' ,['obtener_datos_produccion','generar_nueva_entrada']), 
 
       validar_datos_envio(){
         if(this.getdatosUsuario.id_depto === this.datos.deptos.id){
@@ -236,7 +236,8 @@
       },
 
       async evaluar_envio_de_producto(){
-
+        
+        // ! VALIDACION DE PERMISOS DE USUSARIO ****************
         let permiso = await this.verificar_permiso_usuario(this.componente);
         this.alerta_envio_material = false; // CIERRO MODAL DE CONFIRMACION
         this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
@@ -250,6 +251,7 @@
           };
           return;
         }
+        // ! ***************************************************
 
         if(this.datos.deptos.pt === 1){
           const payload = {
@@ -265,7 +267,7 @@
 
           // console.log('payload 2',payload);
           // return;
-          this.gemerar_nueva_entrada(payload).then( response =>{
+          this.generar_nueva_entrada(payload).then( response =>{
             this.alerta = { activo: true, texto : response.bodyText, color : 'green' };
             this.cerrar_vista();
           }).catch( error =>{

@@ -85,7 +85,7 @@
           <v-data-table
             :headers="headers"
             :items="Produccion"
-            class="font-weight-black"
+            class="font-weight-bold"
             fixed-header
             hide-default-footer
             :height="tamanioPantalla"
@@ -95,31 +95,40 @@
             @page-count="pageCount = $event"
             locale="es-es"
            >
-          
 
-            <template v-slot:item.cant_sol="{ item }">
-              <span>  {{ item.cant_sol | currency(0) }}  </span>
+            <template v-slot:item.cant_sol="{ item }" >
+              <!-- <span v-if="item.recibidas > 0">  {{ item.recibidas | currency(0) }}  </span> -->
+              <span >  {{ item.cant_sol | currency(0) }}  </span>
             </template>
+
             <template v-slot:item.recibidas="{ item }">
               <span>  {{ item.recibidas | currency(0) }}  </span>
             </template>
             <template v-slot:item.terminadas="{ item }">
               <span>  {{ item.terminadas | currency(0) }}  </span>
             </template>
+            <template v-slot:item.reposicion="{ item }">
+              <span>  {{ item.reposicion | currency(0) }}  </span>
+            </template>
 
             <template v-slot:item.codigo="{ item }" >
               <v-btn text class="font-weight-black">  {{ item.codigo  }}  </v-btn>
             </template>
 
-            
+            <template v-slot:item.tipo_prog="{ item }" >
+              <span v-if="item.tipo_prog == 0" style="font-size:13px"> COMPLETO </span>
+              <span v-else style="font-size:13px"> {{ tipos_envios[item.tipo_prog -1].nombre }} </span>
+
+            </template>
+            <!--
             <template v-slot:item.urgencia="{ item }" >
               <span v-if="item.urgencia === 1"> <v-btn fab style="width: 30px; height: 30px" color="white"></v-btn>  </span>
               <span v-if="item.urgencia === 2"> <v-btn fab style="width: 30px; height: 30px" color="orange"></v-btn> </span>
               <span v-if="item.urgencia === 3"> <v-btn fab style="width: 30px; height: 30px" color="error"></v-btn> </span>
             </template>
-
+            -->
             <template v-slot:item.fecha_entrega="{ item }" >
-              <span :class="item.dias >= 3? 'success--text':'error--text'">
+              <span :class="item.dias >= 3? 'success--text':'error--text'" >
                 {{ moment(item.fecha_entrega).format('LL') }} 
               </span>
 
@@ -130,69 +139,59 @@
             </template>
 
             <template v-slot:item.dias="{ item }" v-if="estatus.id == 0 || estatus.id == 1 || estatus.id == 2 ">
-              <span :class="[`red--text`, ]" v-if="item.dias === 0 "> 
+              <span :class="[`red--text`, ]" v-if="item.dias === 0 " > 
                 HOY SE ENTREGA 
               </span>
-              <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias >= 1 "> 
+              <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias >= 1 " > 
                 {{ item.dias > 1 ?'FALTAN':'FALTA'}}  {{ item.dias }} {{ item.dias > 1 ?'DÍAS':'DÍA'}}  
               </span>
-              <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias < 0 "> 
+              <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias < 0 "  > 
                 FUERA DE TIEMPO 
               </span>
             </template>
 
             <template v-slot:item.dias="{ item }" v-else>
-              <span class="success--text" v-if="estatus.id === 3 "> TERMINADO </span>
-              <span class="success--text" v-if="estatus.id === 4 "> ENVIADO </span>
-
+              <span class="success--text" v-if="estatus.id === 3 " > TERMINADO </span>
+              <span class="success--text" v-if="estatus.id === 4 " > ENVIADO </span>
             </template>
 
             <template v-slot:item.deptoemisor="{ item }">
-              <span  > {{ item.deptoemisor ? item.deptoemisor : 'MASTER' }} </span>
+              <span style="font-size:13px"> {{ item.deptoemisor ? item.deptoemisor : 'MASTER' }} </span>
             </template>
 
             <template v-slot:item.action="{ item }">
+
+              <!-- RECIBIR MATERIAL -->
               <v-btn 
                 v-if="estatus.id === 0"
                 @click="abrir_modal_accion(item)"
-                color="celeste" dark
+                color="celeste" dark small 
               >
                 <v-icon > mdi-package-variant </v-icon> 
               </v-btn>
 
+              <!-- INICIAR PARTIDA -->
               <v-btn 
                 v-if="estatus.id === 1"
                 @click="abrir_modal_accion(item)"
-                color="celeste" dark
+                color="celeste" dark small
               >
                 <v-icon > mdi-play-outline </v-icon> 
               </v-btn>
 
+              <!-- BOTON DE ACCION -->
               <v-btn 
                 v-if="estatus.id === 2"
-                @click="abrir_modal_accion(item)"
-                color="celeste" dark
-                class="ma-1"
+                @click="
+                  modal_acciones = true; 
+                  parametros= item;
+                  itemAFinalizar = item;"
+                color="rosa" dark small
               >
-                <v-icon style="font-size:28px"> mdi-cube-send</v-icon> 
+                <v-icon large> mdi-playlist-edit </v-icon> 
               </v-btn>
-
-             
               
-            </template>
-
-            <template v-slot:item.action2="{ item }">
-             <v-btn 
-                v-if="estatus.id === 2"
-                @click="modal_finalizar_partida = true;itemAFinalizar = item"
-                color="success" dark
-                class="ma-1"
-              >
-                <v-icon style="font-size:28px"> mdi-text-box-check-outline</v-icon> 
-              </v-btn>
-            </template>
-
-
+            </template> 
           </v-data-table>
         </v-card>
         	<!-- PAGINACION -->
@@ -200,6 +199,62 @@
 					<v-pagination v-model="page" :length="pageCount"></v-pagination>
 				</div>
       </v-col>
+
+       <!--  MODAL DE ACCIONES -->
+      <v-dialog v-model="modal_acciones" width="400px" persistent >
+        <v-card class="pa-3">
+          <v-card-actions class="pa-0" >
+            <v-card-text class="font-weight-black text-h6">
+              MENÚ DE OPCIONES
+            </v-card-text>
+            <v-spacer></v-spacer>
+            <v-btn color="error" fab small @click="modal_acciones = false" ><v-icon>clear</v-icon></v-btn>
+          </v-card-actions>
+
+          <!-- ENVIAR MATERIAL -->
+          <v-btn 
+            v-if="estatus.id === 2"
+            @click="modal_envio_producto = true; modal_acciones = false"
+            color="celeste" dark
+            class="ma-1"    block large
+          >
+            <v-icon > mdi-cube-send</v-icon> 
+            ENVIAR MATERIAL
+          </v-btn>
+          <!-- REPOSICION DE MATERIAL-->
+          <v-btn 
+            v-if="estatus.id === 2"
+            @click="modal_reposicion = true; modal_acciones = false"
+            color="orange" dark
+            class="ma-1" block large
+          >
+            <v-icon > mdi-database-arrow-left</v-icon>
+            REPOSICION DE MATERIAL
+          </v-btn>
+          <!-- GENERAR MERMA 
+          <v-btn 
+            v-if="estatus.id === 2"
+            @click="abrir_modal_accion(item)"
+            color="error" dark
+            class="ma-1" block large
+          >
+            <v-icon > mdi-delete-variant</v-icon> 
+            GENERAR MERMA
+          </v-btn>
+          -->
+          <!-- FINALIZAR PARTIDA -->
+          <v-btn 
+            v-if="estatus.id === 2"
+            @click="modal_finalizar_partida = true; modal_acciones = false"
+            color="success" 
+            class="ma-1" 
+            block large dark
+          >
+            <v-icon > mdi-text-box-check-outline</v-icon> 
+            FINALIZAR PARTIDA
+          </v-btn>
+        </v-card>
+      </v-dialog>
 
       <!-- MODAL RECIBO MATERIAL -->
       <v-dialog v-model="modal_recibo_material" width="600px" persistent transition="dialog-bottom-transition">
@@ -227,6 +282,16 @@
           <ENVIOP
             :parametros="parametros"
             @modal="modal_envio_producto = $event"
+          />
+        </v-card>
+      </v-dialog>
+
+       <!-- MODAL REPOSICION -->
+      <v-dialog v-model="modal_reposicion" width="600px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <REPOSICION
+            :parametros="parametros"
+            @modal="modal_reposicion = $event"
           />
         </v-card>
       </v-dialog>
@@ -279,8 +344,8 @@
   // COMPONENTES *********************************************** 
   import RMATERIAL from '@/views/PRODUCCION/recibo_material.vue'
   import INCIARP from '@/views/PRODUCCION/iniciar_partida.vue'
-  import ENVIOP   from '@/views/PRODUCCION/envio_producto.vue'
-  
+  import ENVIOP from '@/views/PRODUCCION/envio_producto.vue'
+  import REPOSICION from '@/views/PRODUCCION/reposicion.vue'
   
   export default {
 		mixins:[metodos],
@@ -288,7 +353,8 @@
       overlay,
       RMATERIAL,
       INCIARP,
-      ENVIOP
+      ENVIOP,
+      REPOSICION
 		},
     data:() =>({
       componente: 'producción',
@@ -298,20 +364,23 @@
       itemsPerPage: 20,
       search: '',
       headers: [
-          { text: 'Urgencia'        , align:'left'  , value: 'urgencia'  },
-          { text: 'Partida'         , align:'left'  , value: 'id'  },
-          { text: 'OT'              , align:'left'    , value: 'id_ot'    },
-          { text: 'Cliente'         , align:'left'    , value: 'nomcli'    },
-          { text: 'Programado'      , align:'left'    , value: 'creacion'},
-          { text: 'Entrega'         , align:'left'    , value: 'fecha_entrega'},
-          { text: 'Faltantes'       , align:'left'    , value: 'dias'},
-          { text: 'Producto'        , align:'left'   , value: 'codigo'   },
-          { text: 'Solicitado'      , align:'right'   , value: 'cant_sol' },
-          { text: 'Recibido'        , align:'right'   , value: 'recibidas'   },
-          { text: 'Terminado'       , align:'right'   , value: 'terminadas'   },
-          { text: 'Emisor'          , align:'left'   , value: 'deptoemisor'   },
-          { text: 'Enviado a'       , align:'left'   , value: 'departamento'   },
-					{ text: '' 		            , align: 'right'  , value: 'action' , sortable: false },
+          // { text: 'Urgencia'        , align:'left'  , value: 'urgencia'  },
+          { text: 'OT'         , align:'left'    , value: 'id_ot'},
+          { text: 'Partida'    , align:'left'    , value: 'id_det_ot'},
+          { text: 'Cliente'    , align:'left'    , value: 'nomcli'},
+          { text: 'Programado' , align:'left'    , value: 'creacion'},
+          { text: 'Entrega'    , align:'left'    , value: 'fecha_entrega'},
+          { text: 'Faltantes'  , align:'left'    , value: 'dias'},
+          { text: 'Producto'   , align:'left'    , value: 'codigo'   },
+          { text: 'Tipo'       , align:'center'  , value: 'tipo_prog'},
+          { text: 'Solicitado' , align:'right'   , value: 'cant_sol'},
+          { text: 'Recibido'   , align:'right'   , value: 'recibidas'},
+          { text: 'Terminado'  , align:'right'   , value: 'terminadas'},
+          { text: 'Reposición' , align:'right'   , value: '
+          '},
+          { text: 'Emisor'     , align:'left'    , value: 'deptoemisor'},
+          { text: 'Enviado a'  , align:'left'    , value: 'departamento'},
+					{ text: '' 		       , align: 'right'  , value: 'action' , sortable: false },
 					{ text: '' 		            , align: 'right'  , value: 'action2' , sortable: false },
 
       ],
@@ -339,13 +408,17 @@
 
       depto: { id:null, nombre:''},
       departamentos:[],
+      tipos_envios:[],
       // MODALES 
       parametros: {}, 
       modal_recibo_material: false,
       modal_inciar: false,
       modal_envio_producto: false,
+      modal_reposicion: false,
       modal_finalizar_partida: false, 
       itemAFinalizar: {},
+
+      modal_acciones:false,
       
       // ALERTAS
       contador: 0 ,
@@ -367,9 +440,10 @@
     },
 
     async created(){
-      this.colorBar();
       this.departamentos = await this.consultar_deptos_por_suc(this.getdatosUsuario.id_sucursal);
+      this.tipos_envios  = await this.consuta_tipos_envios();
       this.depto = { id: this.getdatosUsuario.id_depto }
+      this.colorBar();
       // console.log('deptos', this.departamentos);
       this.init();
     },
@@ -438,17 +512,22 @@
             this.modal_inciar = true;
             this.parametros = item;
             break;
-
-          case 2:
-            this.modal_envio_producto = true;
-            this.parametros = item;
-            break;
-         
         }
       },
 
       async finalizar_partida(){
-
+        
+        //VALIDACION DE CANTIDADES CONTRA TERMINADOS PARA SABER SI PUEDE FINALIZAR LA PARTIDA
+        if(this.itemAFinalizar.terminadas < this.itemAFinalizar.cant_sol){
+          this.alerta = { 
+            activo: true,
+            texto : `Aun no completas la cantidad solicitada, termina el trabajo.`,
+            color : 'error'
+          };
+          return;
+        }
+        
+        // ! VALIDAR PERMISOS DE USUARIOS EN LA INTERFAZ ************************
         let permiso = await this.verificar_permiso_usuario(this.componente);
         this.modal_finalizar_partida = false; // CIERRO MODAL DE CONFIRMACION
         this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
@@ -462,6 +541,7 @@
           };
           return;
         }
+        // ! ********************************************************************
 
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {
@@ -508,3 +588,7 @@
 
   }
 </script>
+
+<style scoped >
+  
+</style>

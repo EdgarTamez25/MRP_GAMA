@@ -38,7 +38,7 @@ export default{
 			commit('LOADING',true); commit('PRODUCCION', []);
 			return new Promise( resolve=> {
 				Vue.http.post('obtener.productos.enviados', payload).then(response=>{
-					console.log('PRODUCCION', response)
+					// console.log('PRODUCCION', response)
 					commit('PRODUCCION', response.body)
 					resolve(true);
 				}).catch((error)=>{
@@ -48,7 +48,7 @@ export default{
 			})
 		},
 		
-		gemerar_nueva_entrada({commit}, payload){
+		generar_nueva_entrada({commit}, payload){
 			return new Promise( (resolve, reject) => {
 				Vue.http.post('generar.nueva.entrada', payload).then(response=>{
 					// console.log('PT', response)

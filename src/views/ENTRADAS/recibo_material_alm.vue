@@ -196,8 +196,12 @@
           id_sucursal : this.parametros.id_sucursal,
           id_entrada  : this.parametros.id,  // ID PARA ACTUALIZAR EL REGISTRO ACUTAL
           id_creador  : this.getdatosUsuario.id,
+          id_produccion: this.parametros.id_produccion
         };
         
+        console.log('payload', payload);
+        // return
+
         // ! FUNCION QUE MANDA A CREAR LA PROGRAMACION
         this.$http.post('anadir.producto.terminado', payload).then( response =>{
           //! GENERO ALERTA DE RESPUESTA.

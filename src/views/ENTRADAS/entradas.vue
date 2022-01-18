@@ -13,11 +13,11 @@
         <!-- CONTENEDOR PRINCIPAL -->
         <v-card outlined class="pa-3">
           <v-row class="pa-1 mt-1 ">
-						<v-col cols="12" sm="2" md="4" >
+						<v-col cols="12" md="4" >
 							<v-card-actions class="font-weight-black headline  py-0 mt-1 " > ENTRADAS </v-card-actions>
 						</v-col>
 
-            <v-col cols="12" sm="4" md="2">
+            <v-col cols="12" sm="3" md="2">
 							<v-select
 									v-model="sucursal" :items="sucursales" item-text="nombre" item-value="id" outlined color="celeste"  
 									dense hide-details  label="Sucursales" return-object 
@@ -25,14 +25,14 @@
 							></v-select>
 						</v-col> 
 
-						<v-col cols="12" sm="4" md="2" >
+						<v-col cols="12" sm="3" md="2" >
 							<v-select
                 v-model="estatus" :items="Estatus" item-text="nombre" item-value="id"  dense label="Estatus"
                  hide-details  placeholder="Estatus" return-object outlined append-icon="mdi-circle-slice-5"
               ></v-select> 
 						</v-col>
 
-            <v-col cols="6" sm="4" md="2" > <!-- FECHA DE COMPROMISO -->
+            <v-col cols="6" sm="3" md="2" > <!-- FECHA DE COMPROMISO -->
 							<v-dialog ref="fecha1" v-model="fechamodal1" :return-value.sync="fecha1" persistent width="290px">
 								<template v-slot:activator="{ on }">
 									<v-text-field
@@ -48,7 +48,7 @@
 							</v-dialog>
 						</v-col>
 
-						<v-col cols="6" sm="4" md="2"  > <!-- FECHA DE COMPROMISO -->
+						<v-col cols="6" sm="3" md="2"  > <!-- FECHA DE COMPROMISO -->
 							<v-dialog ref="fecha2" v-model="fechamodal2" :return-value.sync="fecha2" persistent width="290px">
 								<template v-slot:activator="{ on }">
 									<v-text-field
@@ -63,7 +63,6 @@
 								</v-date-picker>
 							</v-dialog>
 						</v-col>
-
 
 					</v-row>
 
@@ -104,9 +103,16 @@
             <template v-slot:item.cantidad="{ item }">
               <span class="black--text"> {{ item.cantidad | currency(0) }} </span>
             </template>
+            <template v-slot:item.cantidad_recibida="{ item }">
+              <span class="black--text"> {{ item.cantidad_recibida | currency(0) }} </span>
+            </template>
             
             <template v-slot:item.creacion="{ item }">
-              <span class="black--text"> {{ moment(item.fecha_entrega).format('LLLL') }} </span>
+              <span class="black--text"> {{ moment(item.creacion).format('LLLL') }} </span>
+            </template>
+
+            <template v-slot:item.fecha_actualiza="{ item }">
+              <span class="black--text"> {{ moment(item.fecha_actualiza).format('LLLL') }} </span>
             </template>
 
             <template v-slot:item.action="{ item }">
@@ -177,6 +183,7 @@
       fecha1:moment().subtract(1, 'months').startOf('month').format("YYYY-MM-DD"), 
       fechamodal1:false,
       fecha2: moment().subtract('months').endOf('months').format("YYYY-MM-DD"),
+      fechamodal2:false,
 
       overlay: false ,
       alerta: { 
@@ -186,14 +193,16 @@
       },
       headers: [
           { text: 'Producto'   , align: 'start' , value: 'codigo'   },
-          { text: 'Cantidad'   , align: 'left'  , value: 'cantidad' },
-          { text: 'Unidad'     , align: 'left'  , value: 'unidad'   },
+          { text: 'Envíado'   , align: 'left'  , value: 'cantidad' },
+          // { text: 'Unidad'     , align: 'left'  , value: 'unidad'   },
           { text: 'Cliente'    , align: 'left'  , value: 'nomcli'   },
           { text: 'OC'         , align: 'center' , value: 'oc'       },
           { text: 'OT'         , align: 'center'  , value: 'id_ot'    },
-          { text: 'Producción' , align: 'center'  , value: 'id_produccion'},
+          // { text: 'Producción' , align: 'center'  , value: 'id_produccion'},
           { text: 'Sucursal'   , align: 'left'  , value: 'nomsucursal' },
-          { text: 'Creación'   , align: 'left'  , value: 'creacion' },
+          { text: 'F.Envio'   , align: 'left'  , value: 'creacion' },
+          { text: 'Recibido'   , align: 'left'  , value: 'cantidad_recibida' },
+          { text: 'F.Recibo'   , align: 'left'  , value: 'fecha_actualiza' },
 					{ text: '' 		      , align: 'right' , value: 'action' , sortable: false },
       ],
 
