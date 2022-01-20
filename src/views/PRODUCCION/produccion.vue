@@ -85,7 +85,7 @@
           <v-data-table
             :headers="headers"
             :items="Produccion"
-            class="font-weight-bold"
+            class="font-weight-bold "
             fixed-header
             hide-default-footer
             :height="tamanioPantalla"
@@ -112,7 +112,7 @@
             </template>
 
             <template v-slot:item.codigo="{ item }" >
-              <v-btn text class="font-weight-black">  {{ item.codigo  }}  </v-btn>
+              <v-btn small text class="font-weight-black">  {{ item.codigo  }}  </v-btn>
             </template>
 
             <template v-slot:item.tipo_prog="{ item }" >
@@ -139,7 +139,7 @@
             </template>
 
             <template v-slot:item.dias="{ item }" v-if="estatus.id == 0 || estatus.id == 1 || estatus.id == 2 ">
-              <span :class="[`red--text`, ]" v-if="item.dias === 0 " > 
+              <span :class="[`red--text`]" v-if="item.dias === 0 "> 
                 HOY SE ENTREGA 
               </span>
               <span :class="item.dias >= 3? 'success--text':'error--text'" v-if="item.dias >= 1 " > 
@@ -157,6 +157,19 @@
 
             <template v-slot:item.deptoemisor="{ item }">
               <span style="font-size:13px"> {{ item.deptoemisor ? item.deptoemisor : 'MASTER' }} </span>
+            </template>
+
+            <template v-slot:item.comentarios="{ item }" >
+              <v-btn 
+                icon :color="color2"
+                v-if="item.comentarios"
+                @click="
+                  parametros = item; 
+                  comentariosModal= true; 
+                "
+              >
+                <v-icon >mdi-message-reply-text</v-icon>
+              </v-btn>
             </template>
 
             <template v-slot:item.action="{ item }">
@@ -296,6 +309,16 @@
         </v-card>
       </v-dialog>
 
+      <!-- MODAL COMENTARIOS -->
+      <v-dialog v-model="comentariosModal" width="600px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <COMENTARIOS
+            :parametros="parametros"
+            @modal="comentariosModal = $event"
+          />
+        </v-card>
+      </v-dialog>
+
       <!-- MODAL FINALIZAR PARTIDA -->
       <v-dialog v-model="modal_finalizar_partida" width="600px" persistent >
         <v-card class="pa-3">
@@ -346,6 +369,8 @@
   import INCIARP from '@/views/PRODUCCION/iniciar_partida.vue'
   import ENVIOP from '@/views/PRODUCCION/envio_producto.vue'
   import REPOSICION from '@/views/PRODUCCION/reposicion.vue'
+  import COMENTARIOS  from '@/views/PRODUCCION/comentarios.vue'
+
   
   export default {
 		mixins:[metodos],
@@ -354,7 +379,8 @@
       RMATERIAL,
       INCIARP,
       ENVIOP,
-      REPOSICION
+      REPOSICION,
+      COMENTARIOS
 		},
     data:() =>({
       componente: 'producción',
@@ -366,7 +392,7 @@
       headers: [
           // { text: 'Urgencia'        , align:'left'  , value: 'urgencia'  },
           { text: 'OT'         , align:'left'    , value: 'id_ot'},
-          { text: 'Partida'    , align:'left'    , value: 'id_det_ot'},
+          { text: 'Par'    , align:'left'    , value: 'id_det_ot'},
           { text: 'Cliente'    , align:'left'    , value: 'nomcli'},
           { text: 'Programado' , align:'left'    , value: 'creacion'},
           { text: 'Entrega'    , align:'left'    , value: 'fecha_entrega'},
@@ -376,12 +402,12 @@
           { text: 'Solicitado' , align:'right'   , value: 'cant_sol'},
           { text: 'Recibido'   , align:'right'   , value: 'recibidas'},
           { text: 'Terminado'  , align:'right'   , value: 'terminadas'},
-          { text: 'Reposición' , align:'right'   , value: '
-          '},
+          { text: 'Reposición' , align:'right'   , value: 'reposicion'},
           { text: 'Emisor'     , align:'left'    , value: 'deptoemisor'},
-          { text: 'Enviado a'  , align:'left'    , value: 'departamento'},
+          { text: 'Enviado'  , align:'left'    , value: 'departamento'},
+          { text: 'Comentarios'  , align:'center'  , value: 'comentarios'},
 					{ text: '' 		       , align: 'right'  , value: 'action' , sortable: false },
-					{ text: '' 		            , align: 'right'  , value: 'action2' , sortable: false },
+					// { text: '' 		       , align: 'right'  , value: 'action2' , sortable: false },
 
       ],
       
@@ -419,11 +445,14 @@
       itemAFinalizar: {},
 
       modal_acciones:false,
+      comentariosModal: false,
       
       // ALERTAS
       contador: 0 ,
       color: '',
+      color2: '',
       colores: ['black','error'], 
+      colores2: ['success','black'], 
       overlay: false,
 
       alerta: { 
@@ -576,9 +605,11 @@
 
       colorBar(){
         this.color = this.colores[this.contador]  
+        this.color2 = this.colores2[this.contador] 
+
         this.contador++
         if(this.contador <= 2){
-          setTimeout(this.colorBar,500);
+          setTimeout(this.colorBar,1000);
         }
         if(this.contador == 2){
           this.contador = 0

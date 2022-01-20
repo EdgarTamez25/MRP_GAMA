@@ -211,7 +211,7 @@
 <style >
     ::-webkit-scrollbar {
     width: 5px;
-    height : 5px;
+    height : 8px;
   }
 
   /* Track */

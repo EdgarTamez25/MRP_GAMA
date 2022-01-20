@@ -98,6 +98,7 @@
               <span v-if="item.oc" class="morado--text"> {{ item.oc }} </span>
               <span v-else class="morado--text"> S/O.C. </span>
             </template>
+
             <template v-slot:item.id_ot="{ item }">
               <span v-if="item.urgencia === 1"  class="black--text"> {{ item.id_ot }} </span>
               <span v-if="item.urgencia === 2" class="orange--text"> {{ item.id_ot}} </span>
@@ -108,36 +109,43 @@
               <span v-if="item.urgencia === 2" class="orange--text"> {{ item.codigo}} </span>
               <span v-if="item.urgencia === 3" class="error--text"> {{ item.codigo}} </span>
             </template>
+            
             <template v-slot:item.cantidad="{ item }">
               <span v-if="item.urgencia === 1" class="black--text">  {{ item.cantidad | currency(0) }}  </span>
               <span v-if="item.urgencia === 2" class="orange--text"> {{ item.cantidad | currency(0) }} </span>
               <span v-if="item.urgencia === 3" class="error--text">  {{ item.cantidad | currency(0) }} </span>
             </template>
+
             <template v-slot:item.unidad="{ item }">
               <span v-if="item.urgencia === 1" class="black--text"> {{ item.unidad }}  </span>
               <span v-if="item.urgencia === 2" class="orange--text"> {{ item.unidad}} </span>
               <span v-if="item.urgencia === 3" class="error--text"> {{ item.unidad}} </span>
             </template>
+
             <template v-slot:item.nomcli="{ item }">
               <span v-if="item.urgencia === 1"  class="black--text"> {{ item.nomcli }} </span>
               <span v-if="item.urgencia === 2" class="orange--text"> {{ item.nomcli}} </span>
               <span v-if="item.urgencia === 3" class="error--text"> {{ item.nomcli}} </span>
             </template>
+
             <template v-slot:item.concepto="{ item }">
               <span v-if="item.urgencia === 1"  class="black--text"> {{ item.concepto === 1 ? 'PRODUCCIÓN':'STOCK'}} </span>
               <span v-if="item.urgencia === 2" class="orange--text"> {{ item.concepto === 1 ? 'PRODUCCIÓN':'STOCK'}} </span>
               <span v-if="item.urgencia === 3" class="error--text">  {{ item.concepto === 1 ? 'PRODUCCIÓN':'STOCK'}} </span>
             </template>
+
             <template v-slot:item.solicitante="{ item }">
               <span v-if="item.urgencia === 1"  class="black--text"> {{ item.solicitante }} </span>
               <span v-if="item.urgencia === 2" class="orange--text"> {{ item.solicitante}} </span>
               <span v-if="item.urgencia === 3" class="error--text"> {{ item.solicitante}} </span>
             </template>
+
             <template v-slot:item.urgencia="{ item }" v-if="estatus.id != 1">
               <v-btn text v-if="item.urgencia === 1" class="black--text"> NORMAL </v-btn>
               <v-btn text v-if="item.urgencia === 2" color="orange"> URGENTE </v-btn>
               <v-btn text v-if="item.urgencia === 3" color="error"> PRIORIDAD </v-btn>
             </template>
+
             <template v-slot:item.urgencia="props" v-else >
               <v-edit-dialog 
                 :return-value.sync="props.item.urgencia"
@@ -181,6 +189,19 @@
               <span v-if="item.urgencia === 3" class="error--text">  {{ moment(item.fecha_entrega).format('LL') }} </span>
             </template>
 
+            <template v-slot:item.comentarios="{ item }" >
+              <v-btn 
+                icon :color="color" 
+                v-if="item.comentarios"
+                @click="
+                  parametros = item; 
+                  comentariosModal= true; 
+                "
+              >
+                <v-icon >mdi-message-reply-text</v-icon>
+              </v-btn>
+            </template>
+            
             <template v-slot:item.action="{ item }">
               <v-btn 
                 v-if="estatus.id === 1"
@@ -208,6 +229,7 @@
 				</div>
       </v-col>
 
+
       <!-- MODAL PROGRAMACION -->
       <v-dialog v-model="programacionModal" width="700px" persistent transition="dialog-bottom-transition">
         <v-card class="pa-3">
@@ -228,6 +250,15 @@
         </v-card>
       </v-dialog>
 
+      <!-- MODAL COMENTARIOS -->
+      <v-dialog v-model="comentariosModal" width="600px" persistent transition="dialog-bottom-transition">
+        <v-card class="pa-3">
+          <COMENTARIOS
+            :parametros="parametros"
+            @modal="comentariosModal = $event"
+          />
+        </v-card>
+      </v-dialog>
       <overlay v-if="overlay"/>
 
     </v-row>
@@ -242,13 +273,15 @@
   import {mapGetters, mapActions} from 'vuex';
   import PROGRAMACION from '@/views/MASTER/programacion.vue'
   import DISTRIBUCION from '@/views/MASTER/distribucion.vue'
+  import COMENTARIOS  from '@/views/PRODUCCION/comentarios.vue'
 
   export default {
 		mixins:[metodos],
     components: {
       // overlay,
       PROGRAMACION,
-      DISTRIBUCION
+      DISTRIBUCION,
+      COMENTARIOS
 		},
     data:() =>({
         componente: 'master', // SE ASIGNA MASTER COMO NOMBRE DEL COMPONENTE PADRE
@@ -258,16 +291,17 @@
         itemsPerPage: 20,
         search: '',
         headers: [
-            { text: 'OC'         , align: 'start' , value: 'oc'       },
+            { text: 'OC'         , align: 'left' , value: 'oc'       },
             { text: 'OT'         , align: 'left'  , value: 'id_ot'    },
-            { text: 'Producto'   , align: 'start' , value: 'codigo'   },
+            { text: 'Producto'   , align: 'left' , value: 'codigo'   },
             { text: 'Cantidad'   , align: 'left'  , value: 'cantidad' },
             { text: 'Unidad'     , align: 'left'  , value: 'unidad'   },
             { text: 'Cliente'    , align: 'left'  , value: 'nomcli'   },
             { text: 'Concepto'   , align: 'left'  , value: 'concepto' },
             { text: 'Solicitante', align: 'left'  , value: 'solicitante'},
             { text: 'Urgencia'   , align: 'left'  , value: 'urgencia'  },
-            { text: 'Fecha de entrega'      , align: 'left'  , value: 'fecha_entrega'     },
+            { text: 'F.entrega'      , align: 'left'  , value: 'fecha_entrega'     },
+            { text: 'Comentario'  , align: 'center'  , value: 'comentarios'     },
             { text: '' 		      , align: 'right' , value: 'action' , sortable: false },
         ],
 
@@ -296,6 +330,10 @@
         fechamodal2:false,
 
       //! VARIABLES DE CARGA
+        // ALERTAS
+        contador: 0 ,
+        color: '',
+        colores: ['success','black'],
         overlay: false,
         alerta: { 
           activo: false,
@@ -307,12 +345,17 @@
         programacionModal: false,
         programacion: {},
         distribucionModal: false,
-        distribucion: {}
+        distribucion: {},
+        comentariosModal: false,
+        parametros: {},
+
+        
       
     }),
 
     created(){
       this.init();
+      this.colorBar();
     },
 
     watch:{
@@ -383,7 +426,19 @@
             ...item, 
             id_usuario: this.getdatosUsuario.id 
           });
-      }
+      },
+
+      colorBar(){
+        this.color = this.colores[this.contador]  
+        this.contador++
+        if(this.contador <= 2){
+          setTimeout(this.colorBar,1000);
+        }
+        if(this.contador == 2){
+          this.contador = 0
+        }
+      },
+
     }
 
 
