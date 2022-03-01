@@ -253,6 +253,7 @@
         }
         // ! ***************************************************
 
+        // SI EL DEPARTAMENTO ES PRODUCTO TERMINADO ENTONCES GENERO UNA NUEVA ENTRADA
         if(this.datos.deptos.pt === 1){
           const payload = {
             id_ot         : this.parametros.id_ot,
@@ -264,9 +265,8 @@
             id_creador    : this.getdatosUsuario.id,
             id_movim      : this.parametros.id,   // ID PARA ACTUALIZAR EL REGISTRO
           }
+          console.log('payload a mandar a la entrada', payload);
 
-          // console.log('payload 2',payload);
-          // return;
           this.generar_nueva_entrada(payload).then( response =>{
             this.alerta = { activo: true, texto : response.bodyText, color : 'green' };
             this.cerrar_vista();
@@ -276,7 +276,7 @@
             this.overlay = false;
           })
         }
-
+        // SI ES CUALQUIER OTRO DEPARTAMENTO ENTONCES ENVIO EL MATERÍAL AL SIG deptos
         if(this.datos.deptos.pt === 0){
           // !GENERO OBJETO QUE MANDARE A INSERTAR
           const payload = {

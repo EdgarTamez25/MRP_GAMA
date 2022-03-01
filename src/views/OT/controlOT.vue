@@ -66,7 +66,8 @@
 
           <v-col cols="12" class="py-0 pa-0">
             <v-card-text class="font-weight-black text-h6 py-0 text-center" > 
-              PRODUCTOS A SOLICITAR  
+          
+              PRODUCTOS A SOLICITAR 
             </v-card-text>
           </v-col>
 
@@ -118,6 +119,7 @@
                           v-if="parametros.estatus === 1 && item.concepto != 1" 
                           @click="rellenaCampos(item)"
                         > 
+                        
                           <v-icon>mdi-pencil</v-icon> 
                         </v-btn>
 

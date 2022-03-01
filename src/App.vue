@@ -145,7 +145,6 @@
             { text: 'Salidas'            , icon: 'mdi-truck-fast-outline'           , path: '/salidas'},
             { text: 'Producto Terminados', icon: 'mdi-database-check'               , path: '/productos/terminados'},
             // { text: 'Configuración'      , icon: 'mdi-account-cog'                     , path: '/configuracion/usuarios'},
-
           ],
         },
       ],

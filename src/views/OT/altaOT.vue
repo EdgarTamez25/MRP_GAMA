@@ -108,7 +108,7 @@
             color="success"  
             v-if="detalle.length" 
             @click="validaInformacion()" 
-          >  Guardar información 
+          >  Guardar información
           </v-btn>
         </v-footer>
 
@@ -171,6 +171,13 @@
                   dense hide-details  label="Urgencia" return-object 
                 ></v-select> 
               </v-col>
+
+              <v-col cols="12">
+                <v-textarea
+                  v-model="editDetalle.comentarios" label="Comentarios" 
+                  dense hide-details color="celeste" filled rows="2"
+                ></v-textarea>
+              </v-col> 
 
 
             </v-row>
@@ -262,6 +269,7 @@
           producto: {id:null, nombre:''},
           urgencia: { id: null, nombre:''},
           cantidad: null, 
+          comentarios: null, 
           fecha   : new Date().toISOString().substr(0, 10),
         },
 
@@ -382,8 +390,15 @@
       },
 
       validaInformacion(){
-				if(!this.cliente.id)	    { this.alerta = { activo: true, texto:"DEBES AGREGAR EL CLIENTE QUE SOLICITA EL PRODUCTO", color:'error' }; return }
-				if(!this.detalle.length)	{ this.alerta = { activo: true, texto:"DEBES AGREGAR AL MENOS 1 PRODUCTO"                , color:'error' }; return }
+				if(!this.cliente.id){ 
+          this.alerta = { activo: true, texto:"DEBES AGREGAR EL CLIENTE QUE SOLICITA EL PRODUCTO", color:'error' }; 
+          return 
+        };
+
+				if(!this.detalle.length){ 
+          this.alerta = { activo: true, texto:"DEBES AGREGAR AL MENOS 1 PRODUCTO", color:'error' }; 
+          return 
+        }
 				this.PrepararPeticion()
 			},
 
@@ -414,8 +429,8 @@
           fecha_procesado: this.traerFechaActual() + ' ' + this.traerHoraActual(),
           sistema        : 'MRP'
         }
-        // console.log('payload', payload);
-
+        console.log('payload', payload);
+        
         this.$http.post('crear.orden.trabajo', payload).then( response =>{
             this.alerta = { activo: true, texto: response.bodyText, color:'green'};
             this.TerminarProceso();

@@ -575,6 +575,7 @@
         // !GENERO OBJETO QUE MANDARE A INSERTAR
         const payload = {
           id_movim      : this.itemAFinalizar.id,
+          id_ot         : this.itemAFinalizar.id_ot,
           id_det_ot     : this.itemAFinalizar.id_det_ot,
           id_produccion : this.itemAFinalizar.id_produccion,
           id_producto   : this.itemAFinalizar.id_producto,
