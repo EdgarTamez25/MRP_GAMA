@@ -78,10 +78,13 @@
         />
        <!-- hidden-sm-and-down-->
       <v-spacer></v-spacer>
-      
-      <v-toolbar-items @click="cerrar_sesion=true" >
-        <v-btn text> <v-icon >mdi-exit-to-app</v-icon> </v-btn>
-      </v-toolbar-items>
+
+      <v-btn fab small color="orange" dark class="mx-2 elevation-12" @click="modalTipoCambio=true"> 
+        <v-icon >attach_money</v-icon>
+      </v-btn>
+      <v-btn fab small color="grey darken-3" class="elevation-12"  @click="cerrar_sesion=true"> 
+        <v-icon >mdi-exit-to-app</v-icon> 
+      </v-btn>
     </v-app-bar>
 
     <v-overlay v-if="blocked">
@@ -115,13 +118,51 @@
       </v-card>
     </v-dialog>
 
+    <!-- MODAL TIPO DE CAMBIO -->
+    <v-dialog v-model="modalTipoCambio" width="450" transition="dialog-bottom-transition">
+      <v-card class="pa-2">
+        <v-card-actions class="pa-0 py-0 " >
+          <v-card-text class="font-weight-black text-h6"> TIPO DE CAMBIO </v-card-text> 
+          <v-spacer></v-spacer>
+          <v-btn color="error" fab small  @click="modalTipoCambio= false" ><v-icon>clear</v-icon></v-btn>
+        </v-card-actions> 
+
+        <v-card class="pa-2 mt-2" flat>
+          <v-select
+            v-model="tipo_cambio" :items="['USD']" label="Tipo de cambio" 
+            outlined class="text-h6" disabled
+          ></v-select>
+
+          <v-text-field
+            v-model="cambio" label="Cambio" placeholder="Cambio" append-icon="attach_money"
+            hide-details outlined type="number" class="headline"
+          ></v-text-field>
+        </v-card>
+
+        <v-col cols="12" class="mt-8"/>
+        <!-- //!CONTENEDOR DE CIERRE Y PROCESOS -->
+        <v-footer absolute >
+          <v-spacer></v-spacer>
+          <v-btn 
+            color="success"  
+            @click="preparar_datos_tipo_cambio()" 
+          >  
+          Guardar Información'
+          </v-btn>
+        </v-footer>
+
+      </v-card>
+    </v-dialog>
+
   </v-app>
 </template>
 
 <script>
   import store from '@/store'
   import { mapGetters,mapActions } from 'vuex';
+  import  metodos from '@/mixins/metodos.js';
   export default {
+    mixins:[metodos],
     name: 'App',
 
     data: () => ({
@@ -148,6 +189,11 @@
           ],
         },
       ],
+
+      // MODAL TIPO DE CAMBIO
+      modalTipoCambio: false,
+      tipo_cambio:'USD',
+      cambio:0,
     }),
 
     async created(){
@@ -170,30 +216,78 @@
                 this.blocked = false;  // DESACTIVO BLOCKEO
               }).catch( error=>{       // OBTENGO LA INFORMACION DEL USUARIO
                 this.alerta = { activo: true, texto: error.bodyText, color:'error' }
-                window.location.href = this.urlSistemaPrincipal;
+                // window.location.href = this.urlSistemaPrincipal;
               });  
             }).catch( error =>{
-              window.location.href = this.urlSistemaPrincipal;
+              // window.location.href = this.urlSistemaPrincipal;
             })
             if(this.$router.currentRoute.name != 'Inicio'){  // COMPARO LA RUTA EN LA QUE ME ENCUENTRO 
               this.$router.push({ name: 'Inicio' });         // SI ES DIFERENTE ENRUTO A PAGINA ARRANQUE
             }
           }else{ 
-           window.location.href = this.urlSistemaPrincipal;
+          //  window.location.href = this.urlSistemaPrincipal;
           }
       } else {
-        window.location.href = this.urlSistemaPrincipal;
+        // window.location.href = this.urlSistemaPrincipal;
       }
+      
+      this.obtener_datos_tipo_cambio();
+
     },
 
     computed:{
       ...mapGetters('Login' ,['getLogeado','getdatosUsuario','permisos_usuario']), 
+      ...mapGetters('TipoCambio' ,['tipo_cambio_hoy']), 
     },
 
+    watch:{
+      modalTipoCambio(){
+        if(this.modalTipoCambio){
+          this.obtener_datos_tipo_cambio();
+        }
+      }
+    },
 
     methods:{
       ...mapActions('Login' ,['salirLogin','ObtenerDatosUsuario','validaSession','obtener_permisos_usuario']), 
+      ...mapActions('TipoCambio' ,['obtener_tipo_cambio','agregar_tipo_cambio','editar_tipo_cambio']), 
       
+      async obtener_datos_tipo_cambio(){
+        const payload = { fecha: this.traerFechaActual() };
+        this.cambio = await this.obtener_tipo_cambio(payload);
+      },
+
+      // FUNCION PARA GUARDAR EL TIPO DE CAMBIO
+      preparar_datos_tipo_cambio(){
+        const payload = { 
+          cambio: this.cambio,
+          fecha : this.traerFechaActual(),
+          id_creador: this.getdatosUsuario.id
+        }
+
+        !this.tipo_cambio_hoy ? this.agregar_informacion_cambio(payload):
+                                this.editar_informacion_cambio(payload);
+
+      },
+
+      agregar_informacion_cambio(payload){
+        this.agregar_tipo_cambio(payload).then( response => {
+          this.alerta = { activo: true, texto: response.body , color: 'success' };
+          this.obtener_datos_tipo_cambio();
+        }).catch( error =>{
+          this.alerta = { activo: true, texto: error, color: 'error' };
+        })
+      },
+      
+      editar_informacion_cambio(payload){
+        this.editar_tipo_cambio(payload).then( response => {
+          this.alerta = { activo: true, texto: response.body , color: 'success' };
+          this.obtener_datos_tipo_cambio();
+        }).catch( error =>{
+          this.alerta = { activo: true, texto: error, color: 'error' };
+        })
+      },
+
       salir(){
         this.alerta = { activo: true, texto: `HASTA PRONTO ${ this.getdatosUsuario.nombre }`, color :'success'  };
         this.cerrar_sesion= false;

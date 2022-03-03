@@ -11,7 +11,9 @@
         </v-snackbar>
         
 				<v-card-actions class="pa-0" >
-					<v-card-text class="font-weight-black text-h6">  {{ modoVista === 1? 'NUEVA ORDEN DE TRABJO':'DETALLE ORDEN DE TRABAJO' }} </v-card-text> 
+					<v-card-text class="font-weight-black text-h6">  
+          {{ modoVista === 1? 'NUEVA ORDEN DE TRABJO':'DETALLE ORDEN DE TRABAJO' }} 
+          </v-card-text> 
 					<v-spacer></v-spacer>
 					<v-btn color="error" fab small @click="$emit('modal',false)" ><v-icon>clear</v-icon></v-btn>
 				</v-card-actions>
@@ -34,8 +36,9 @@
                     </tr>
                     <tr>
                       <td class="font-weight-black">SOLICITUD</td>
-                      <td class="subtitle-1"> {{ parametros.id_solicitud }}
-                      </td>
+                      <td class="subtitle-1" v-if="parametros.id_solicitud"> {{ parametros.id_solicitud }} </td>
+                      <td class="subtitle-1" v-else> S/REFERENCIA</td>
+
                     </tr>
                     <tr>
                       <td class="font-weight-black">CREACIÓN</td>
@@ -150,6 +153,7 @@
           <v-btn color="success" small v-if="modoVista===1" @click="validaInformacion()" >  Guardar información </v-btn>
           <v-btn color="success" small v-if="modoVista===2" @click="validaInformacion()" >  Actualizar información </v-btn>
         </v-footer>
+
         <!-- FORMULARIO EDICION-->
         <v-dialog v-model="FormularioProductos" width="600px">
           <v-snackbar v-model="alerta.activo" multi-line vertical top right :color="alerta.color" > 
@@ -158,6 +162,7 @@
               <v-btn color="white" text @click="alerta.activo = false" v-bind="attrs"> Cerrar </v-btn>
             </template>
           </v-snackbar>
+
           <v-card class="pa-4">
             <v-row>
               <v-col cols="12" class="py-0 pa-0">
@@ -209,6 +214,28 @@
 
               <v-col cols="12" sm="6" class="py-0 text-right" v-if="modo === 1"> 
                 <v-btn color="celeste" dark  @click="validarPartida(1) "> Agregar partida</v-btn> 
+              </v-col>
+
+              <v-col cols="12">
+                <v-textarea
+                  v-model="comentarios" label="Comentarios" 
+                  dense hide-details color="celeste" filled rows="2"
+                ></v-textarea>
+              </v-col> 
+
+              <v-col cols="12" sm="6">
+                <v-select
+                  v-model="moneda" :items="monedas" item-text="nombre" item-value="id" filled 
+                  dense hide-details label="Moneda" return-object 
+                ></v-select>
+              </v-col>
+
+              <!-- //! PRECIO  -->
+              <v-col cols="12" sm="6" >
+                <v-text-field 
+                  v-model="precio" hide-details dense label="Precio" type="number"
+                  filled placeholder="Precio"
+                />
               </v-col>
 
               
@@ -306,8 +333,13 @@
 				clientes	: [],
 				cliente		: {id:null, nombre:''},
 				// SELECTORES
-				producto    : { id:null, nombre:''},
-				productos   : [],
+				producto : { id:null, nombre:''},
+				productos: [],
+
+        comentarios: '',
+        monedas  : [{ id:1, nombre:'MXN'},{ id:2, nombre:'USD'}],
+        moneda   : { id:1, nombre:'MXN'},
+        precio   : 0,
 				// ALERTAS
 				alerta: { activo: false, texto:'', color:'error'},
 
@@ -331,6 +363,7 @@
       ...mapGetters('Login'    ,['getdatosUsuario']), 
       ...mapGetters('ProductosxCliente' ,['Loading','getPxCxD']), // IMPORTANDO USO DE VUEX - PRODUCTOS (GETTERS)
 			...mapGetters('OT',['Parametros']), // IMPORTANDO USO DE VUEX - (GETTERS)
+      ...mapGetters('TipoCambio' ,['tipo_cambio_hoy']), 
 
 		},
 
@@ -353,9 +386,12 @@
         if(!this.cantidad)		{ this.alerta = { activo: true, texto:'DEBES ESPECIFICAR UNA CANTIDAD', color:'error'}; return }
         if(!this.concepto.id) { this.alerta = { activo: true, texto:'DEBES SELECCIONAR UN CONCEPTO' , color:'error'}; return }
         if(!this.urgencia.id) { this.alerta = { activo: true, texto:'DEBES SELECCIONAR LA URGENCIA DE LA O.T.' , color:'error'}; return }
-        if(this.urgencia.id != 1 && !this.razon) { 
-            this.alerta = { activo: true, texto:'TIENES QUE ESCRIBIR LA RAZON DE LA URGENCIA.' , color:'error'}; return;
-        }
+        if(!this.moneda.id)   { this.alerta = { activo: true, texto:'DEBES SELECCIONAR LA MONEDA.' , color:'error'}; return }
+        if(!this.precio)      { this.alerta = { activo: true, texto:'DEBES AÑADIR EL PRECIO DEL PRODUCTO.' , color:'error'}; return }
+        // if(this.urgencia.id != 1 && !this.razon) { 
+        //     this.alerta = { activo: true, texto:'TIENES QUE ESCRIBIR LA RAZON DE LA URGENCIA.' , color:'error'}; return;
+        // }
+
         this.modo === 1 ? this.agregarPartida(): this.editaPartida();
       },
 
@@ -389,7 +425,6 @@
       },
 
       rellenaCampos(item){
-        // console.log('item', item);
         this.FormularioProductos = true;
         this.idEditar = item.id;
         this.cantidad = item.cantidad;
@@ -399,11 +434,39 @@
         this.urgencia = { id: item.urgencia };
         this.razon    = item.razon;
         this.producto = { id: item.id_producto, nombre: item.producto };
-
+        this.comentarios = item.comentarios;
+        this.moneda = { id: item.id_moneda };
+        this.precio = item.id_moneda == 1 ? item.MXN : item.USD; 
         this.modo = 2;
       },
 
       editaPartida(){
+        if (!this.tipo_cambio_hoy) {
+          this.alerta = { activo: true, texto:'Aun no asignas el tipo de cambio.', color:'error'};
+          return;
+        }
+
+        let precio_peso = 0 , precio_dolar = 0;
+        
+        if(this.tipo_cambio_hoy.cambio){ 
+          
+          if(this.moneda.id  == 1){
+            // TRANSFORMAR A DOLARES.
+            precio_dolar = (this.precio / this.tipo_cambio_hoy.cambio).toFixed(2);
+            precio_peso = this.precio;
+          }
+
+          if(this.moneda.id  == 2){
+            // TRANSFORMAR A PESO.
+            precio_dolar = this.precio ;
+            precio_peso = this.precio * this.tipo_cambio_hoy.cambio;
+          }
+
+        }else{
+          // this.overlay = false;
+          this.alerta = { activo: true, texto: "No se ha registrado el tipo de cambio hoy."};
+          return;
+        }
 
         if(this.modoVista === 1 ){
             this.detalle = this.detalle.map( item => { 
@@ -429,7 +492,12 @@
             concepto    : this.concepto.id,
             fecha_entrega : this.fecha1, 
             urgencia    : this.urgencia.id,
-            razon       : this.razon? this.razon:''
+            razon       : this.razon? this.razon:'',
+            tipo_cambio : this.tipo_cambio_hoy.cambio,
+            comentarios : this.comentarios,
+            id_moneda   : this.moneda.id,
+            MXN         : precio_peso,
+            USD         : precio_dolar
           }
           
           this.$http.post('actualiza.partida.detot',payload).then(response =>{
@@ -454,7 +522,11 @@
         this.fecha    = new Date().toISOString().substr(0, 10);
         this.urgencia = { id:null, nombre:''};
         this.razon    = '';
+        this.comentarios = '', 
+        this.moneda = { id: null, nombre:''};
+        this.precio = 0;
         this.modo     = 1;
+
       },
 
       eliminaPartida(id){

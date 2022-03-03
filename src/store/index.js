@@ -10,6 +10,7 @@ import Productos_terminados from '@/modules/productos_terminados';
 import Entradas from '@/modules/entradas';
 import Salidas from '@/modules/salidas';
 
+import TipoCambio     from '@/modules/TipoCambio';
 
 Vue.use(Vuex)
 
@@ -22,7 +23,6 @@ export default new Vuex.Store({
     salir({commit}){
       setTimeout(()=>{ window.location.href = "http://producciongama.com/"; }, 2000)
     }
-    
   },
   modules: {
     Usuarios,
@@ -32,6 +32,7 @@ export default new Vuex.Store({
     Produccion,
     Productos_terminados,
     Entradas,
-    Salidas
+    Salidas,
+    TipoCambio
   }
 })

@@ -88,13 +88,22 @@ export default {
 		consultar_productos_cliente(id_cliente){  // REMPLAZO DE LA VISTA ALTA DE OT
 			return new Promise( resolve => {
 				this.$http.get('productos.cliente/'+ id_cliente).then((response)=>{
-					//INYECTAR PRODUCTO COMERCIAL.
-					response.body.push({ id:6148 ,nombre:'COMERCIALIZACIÓN', codigo:'COMERCIAL' });
 					resolve(response.body);
 				}).catch(error =>{
 					console.log('error', error)
 				})
 			})	
+		},
+
+		consultar_productos_comerciales(){
+			return new Promise( resolve => {
+				this.$http.get('obtener.productos.comerciales').then((response)=>{
+					resolve(response.body);
+				}).catch(error =>{
+					console.log('error', error)
+				})
+			})
+			
 		},
 
 		// consulta_prod_por_cliente(payload){  // AUTOCOMPLETE -> CLIENTES

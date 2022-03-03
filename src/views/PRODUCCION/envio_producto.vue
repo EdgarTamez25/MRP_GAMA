@@ -239,8 +239,8 @@
         
         // ! VALIDACION DE PERMISOS DE USUSARIO ****************
         let permiso = await this.verificar_permiso_usuario(this.componente);
-        this.alerta_envio_material = false; // CIERRO MODAL DE CONFIRMACION
-        this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
+        // this.alerta_envio_material = false; // CIERRO MODAL DE CONFIRMACION
+        // this.overlay = true;  // ACTIVO OVERLAY DE GUARDADO
 
         if(!permiso){
           this.overlay = false
@@ -265,8 +265,7 @@
             id_creador    : this.getdatosUsuario.id,
             id_movim      : this.parametros.id,   // ID PARA ACTUALIZAR EL REGISTRO
           }
-          console.log('payload a mandar a la entrada', payload);
-
+         
           this.generar_nueva_entrada(payload).then( response =>{
             this.alerta = { activo: true, texto : response.bodyText, color : 'green' };
             this.cerrar_vista();

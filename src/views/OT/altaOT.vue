@@ -30,7 +30,6 @@
               v-model="orden_compra" label="Orden de compra" hide-details dense filled clearable 
             ></v-text-field>
           </v-col>
-
           
         </v-row>
          
@@ -141,12 +140,35 @@
                 ></v-select> 
               </v-col> 
               -->
+              <v-col cols="12" sm="6" class="" >
+                <v-select
+                  v-model="editDetalle.tproducto" :items="tproductos" item-text="nombre" item-value="id" filled 
+                  dense hide-details label="Tipo de producto" return-object @change="cambiar_productos()"
+                ></v-select>
+              </v-col>
+
               <v-col cols="12" sm="6">    
                 <v-autocomplete
-                  v-model="editDetalle.producto" :items="productos"  item-text="codigo" item-value="id" label="Productos" 
-                  dense filled hide-details color="celeste"  return-object
+                  v-model="editDetalle.producto"
+                  :items="productos"
+                  filled
+                  dense
+                  label="Productos"
+                  item-text="codigo"
+                  item-value="id"
+                  return-object
+                  hide-details
                 >
+                  <template v-slot:item="data">
+                    <template>
+                      <v-list-item-content>
+                        <v-list-item-title class="font-weight-black" v-html="data.item.codigo"></v-list-item-title>
+                        <v-list-item-subtitle >{{ data.item.nombre ? data.item.nombre: 'Producto sin nombre'}}</v-list-item-subtitle>
+                      </v-list-item-content>
+                    </template>
+                  </template>
                 </v-autocomplete>
+
               </v-col>
 
               <v-col cols="12" sm="6">
@@ -179,6 +201,20 @@
                 ></v-textarea>
               </v-col> 
 
+              <v-col cols="12" sm="6">
+                <v-select
+                  v-model="editDetalle.moneda" :items="monedas" item-text="nombre" item-value="id" filled 
+                  dense hide-details label="Moneda" return-object 
+                ></v-select>
+              </v-col>
+
+              <!-- //! PRECIO  -->
+              <v-col cols="12" sm="6" >
+                <v-text-field 
+                  v-model="editDetalle.precio" hide-details dense label="Precio" type="number"
+                  filled placeholder="Precio"
+                />
+              </v-col>
 
             </v-row>
             <div class="mt-12"></div>
@@ -263,6 +299,9 @@
           urgencia: { id: null, nombre:''},
           cantidad: null, 
           fecha   : new Date().toISOString().substr(0, 10),
+          moneda  : { id:null, nombre:''},
+          precio  : 0,
+          tproducto: { id: null, nombre:''}
         },
         editDetalle:{
           // depto   : { id:null, nombre:''},
@@ -271,6 +310,9 @@
           cantidad: null, 
           comentarios: null, 
           fecha   : new Date().toISOString().substr(0, 10),
+          moneda  : { id:null, nombre:''},
+          precio  : 0,
+          tproducto: { id: null, nombre:''},
         },
 
         orden_compra:'',
@@ -281,10 +323,15 @@
         cliente: { id:null, nombre:'' },
 				clientes : [],
         deptos   : [],
+        urgencias: [{ id:1, nombre:'NORMAL'},{id:2, nombre:'URGENTE'},{ id:3, nombre:'PRIORIDAD'}],
+        conceptos: [{ id:1, nombre:'PRODUCCION'}, {id:2, nombre:'STOCK'}],
+        monedas  : [{ id:1, nombre:'MXN'},{ id:2, nombre:'USD'}],
+        tproductos: [{ id:1, nombre:'Producción'}, 
+                      { id:2, nombre:'Comercialización'},
+                     ],
 				productos: [],
-        urgencias:[{id:1, nombre:'NORMAL'},{id:2, nombre:'URGENTE'},{ id:3, nombre:'PRIORIDAD'}],
-        conceptos: [{id:1, nombre:'PRODUCCION'}, {id:2, nombre:'STOCK'}],
-				
+        producciones:[],
+        comerciales:[],
 				// ALERTAS
 				alerta : { activo: false, texto:'', color:'error'},
         overlay: false,
@@ -294,19 +341,22 @@
 		async created(){
       this.clientes = await this.consultar_Clientes();
       this.usuarios = await this.consultar_Usuarios();
+      this.comerciales = await this.consultar_productos_comerciales();
 			// this.validarModoVista(); 	  // VALIDO EL MODO DE LA VISTA
 		},
 			
 		computed:{
 			// IMPORTANDO USO DE VUEX - PRODUCTOS (GETTERS)
       ...mapGetters('Login',['getdatosUsuario']), 
-			...mapGetters('OT',['Parametros']), // IMPORTANDO USO DE VUEX - (GETTERS)
+			...mapGetters('OT',['Parametros']), 
+      ...mapGetters('TipoCambio' ,['tipo_cambio_hoy']), 
 
       VALIDACION_PARTIDA(){
         return this.editDetalle.producto.id != null &&
                this.editDetalle.cantidad > 0 &&
-               this.editDetalle.urgencia.id != null;
-              //  this.editDetalle.depto.id != null && 
+               this.editDetalle.urgencia.id != null &&
+               this.editDetalle.moneda.id != null &&
+               this.editDetalle.precio > 0 ;
       }
 		},
 
@@ -319,7 +369,7 @@
       },
 
       async cliente(){
-        this.productos = await this.consultar_productos_cliente(this.cliente.id);
+        this.producciones = await this.consultar_productos_cliente(this.cliente.id);
       },
       // async 'editDetalle.depto'(){
       //   if(this.cliente.id && this.editDetalle.depto){
@@ -350,13 +400,47 @@
           this.alerta = { activo: true, texto:'No puedes dejar campos vacios', color:'error'};
           return;
         }
+
+        if (!this.tipo_cambio_hoy) {
+          this.alerta = { activo: true, texto:'Aun no asignas el tipo de cambio.', color:'error'};
+          return;
+        }
+
+        let precio_peso = 0 , precio_dolar = 0;
+        
+        if(this.tipo_cambio_hoy.cambio){ 
+          
+          if(this.editDetalle.moneda.id  == 1){
+            // TRANSFORMAR A DOLARES.
+            precio_dolar = (this.editDetalle.precio / this.tipo_cambio_hoy.cambio).toFixed(2);
+            precio_peso = this.editDetalle.precio;
+          }
+
+          if(this.editDetalle.moneda.id  == 2){
+            // TRANSFORMAR A PESO.
+            precio_dolar = this.editDetalle.precio ;
+            precio_peso = this.editDetalle.precio * this.tipo_cambio_hoy.cambio;
+          }
+
+        }else{
+          // this.overlay = false;
+          this.alerta = { activo: true, texto: "No se ha registrado el tipo de cambio hoy."};
+          return;
+        }
+
         // ! SI EL INDEX ES -1 ES IGUAL A NUEVO REGISITRO SI NO ES EDICION
         if (this.editedIndex > -1) {
           // !ASIGNO EL NUEVO VALOR AL REGISTRO
           Object.assign(this.detalle[this.editedIndex], this.editDetalle)
-        } else {
+        }else {
           // !INSERTO UN NUEVO ELEMENTO AL ARRAY
-          let detalle = { concepto: {id:2, nombre:'STOCK'}, ...this.editDetalle }
+          let detalle = { 
+            concepto    : { id:2, nombre:'STOCK' }, 
+            MXN         : precio_peso,
+            USD         : precio_dolar,
+            tipo_cambio : this.tipo_cambio_hoy.cambio,
+            ...this.editDetalle 
+          }
           this.detalle.push(detalle);
         }
         this.cerrar_detalle()
@@ -429,7 +513,7 @@
           fecha_procesado: this.traerFechaActual() + ' ' + this.traerHoraActual(),
           sistema        : 'MRP'
         }
-        console.log('payload', payload);
+        // console.log('payload', payload);
         
         this.$http.post('crear.orden.trabajo', payload).then( response =>{
             this.alerta = { activo: true, texto: response.bodyText, color:'green'};
@@ -455,12 +539,17 @@
         this.cerrar_detalle();
         this.detalle = [];
         this.orden_compra = '';
+      },
+
+      cambiar_productos(){
+        if(this.editDetalle.tproducto.id == 1){
+          this.productos = this.producciones
+        }
+
+        if(this.editDetalle.tproducto.id == 2){
+          this.productos = this.comerciales
+        }
       }
-
-
-
-    
-      
 		}
 	}
 </script>
